@@ -1,12 +1,12 @@
-#include "App1.h"
+#include "Application.h"
 
-App1::App1()
+Application::Application()
 {
 	m_Terrain = nullptr;
 	shader = nullptr;
 }
 
-void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight, Input *in, bool VSYNC, bool FULL_SCREEN)
+void Application::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight, Input *in, bool VSYNC, bool FULL_SCREEN)
 {
 	// Call super/parent init function (required!)
 	BaseApplication::init(hinstance, hwnd, screenWidth, screenHeight, in, VSYNC, FULL_SCREEN);
@@ -30,7 +30,7 @@ void App1::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeigh
 }
 
 
-App1::~App1()
+Application::~Application()
 {
 	// Run base application deconstructor
 	BaseApplication::~BaseApplication();
@@ -50,7 +50,7 @@ App1::~App1()
 }
 
 
-bool App1::frame()
+bool Application::frame()
 {
 	bool result;
 
@@ -70,7 +70,7 @@ bool App1::frame()
 	return true;
 }
 
-bool App1::render()
+bool Application::render()
 {
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 
@@ -100,7 +100,7 @@ bool App1::render()
 	return true;
 }
 
-void App1::gui()
+void Application::gui()
 {
 	// Force turn off unnecessary shader stages.
 	renderer->getDeviceContext()->GSSetShader(NULL, NULL, 0);

@@ -1,4 +1,17 @@
-/**
+#pragma once
+
+class PerlinNoise
+{
+public:
+	PerlinNoise();
+	~PerlinNoise();
+
+private:
+};
+
+/////
+
+/*
 * \class C Perlin Noise
 *
 * \brief Implementation of the original Perlin Noise algorithm
@@ -13,6 +26,8 @@
 *
 * \author Gaz Robinson, from Ken Perlin
 */
+
+/*
 #pragma once
 #include <cstdlib>
 
@@ -25,39 +40,40 @@ class CPerlinNoise
 {
 public:
 	//1D and 2D noise functions
-	static double	noise1( double arg );
-	static double	noise2( float vec[2] );
+	static double	noise1(double arg);
+	static double	noise2(float vec[2]);
 
 private:
-///Initialisation///
-	//Does the class need to be initialised
+	///Initialisation///
+		//Does the class need to be initialised
 	static bool		start;
 
 	//Set up the permuation and gradient tables
 	static int		p[B + B + 2];
 	static float	g2[B + B + 2][2];
 	static float	g1[B + B + 2];
-	
-	static void		init(void);
-	static void		setup( float* vec, int i, int& b0, int& b1, float& r0, float& r1 );
 
-///Helper math functions///
-	static const void	normalize2( float v[2] );
-	static const void	normalize3( float v[3] );
+	static void		init(void);
+	static void		setup(float* vec, int i, int& b0, int& b1, float& r0, float& r1);
+
+	///Helper math functions///
+	static const void	normalize2(float v[2]);
+	static const void	normalize3(float v[3]);
 	//Easing interpolation
-	static const inline float	s_curve( float t )
+	static const inline float	s_curve(float t)
 	{
-		return ( t * t * ( 3. - 2. * t ) );
+		return (t * t * (3. - 2. * t));
 	}
 	//Linear interpolation
-	static const inline float	lerp( float t, float a, float b ) { return ( a + t * ( b - a ) ); } 
-	static const inline float	dotProduct( float x1, float y1, float x2, float y2 )
+	static const inline float	lerp(float t, float a, float b) { return (a + t * (b - a)); }
+	static const inline float	dotProduct(float x1, float y1, float x2, float y2)
 	{
 		return  x1 * x2 + y1 * y2;
 	}
 
-///Constructor/Destructor
-	//Prevent instances being created
+	///Constructor/Destructor
+		//Prevent instances being created
 	CPerlinNoise() {}
 	~CPerlinNoise() {}
 };
+*/

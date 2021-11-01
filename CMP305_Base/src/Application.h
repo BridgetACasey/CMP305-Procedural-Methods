@@ -7,12 +7,12 @@
 #include "LightShader.h"
 #include "TerrainMesh.h"
 
-class App1 : public BaseApplication
+class Application : public BaseApplication
 {
 public:
 
-	App1();
-	~App1();
+	Application();
+	~Application();
 	void init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight, Input* in, bool VSYNC, bool FULL_SCREEN);
 
 	bool frame();

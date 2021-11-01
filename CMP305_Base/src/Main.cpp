@@ -1,10 +1,10 @@
 // Main.cpp
 #include "System.h"
-#include "App1.h"
+#include "Application.h"
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
-	App1* app = new App1();
+	Application* app = new Application();
 	System* system;
 
 	// Create the system object.

@@ -153,36 +153,15 @@ void Application::gui()
 		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
-	if (ImGui::Button("Particle"))
+	if (ImGui::Button("Ken's Perlin"))
 	{
-		m_Terrain->particleDeposition(0.25f);
+		m_Terrain->kenPerlin();
 		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
-	if (ImGui::Button("Perlin"))
+	if (ImGui::Button("Perlin 2D"))
 	{
 		m_Terrain->perlin2D();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-	}
-
-	static int octs = 8;
-	ImGui::DragInt("Octaves", &octs, 1, 1, 10);
-
-	static float amplInfl = 0.4f;
-	ImGui::DragFloat("Ampl. Infl.", &amplInfl, 0.1f, 0.01f, 0.99f);
-
-	static float freqInfl = 2.0f;
-	ImGui::DragFloat("Freq. Infl.", &freqInfl, 0.1f, 1.0f, 10.0f);
-
-	if (ImGui::Button("FBM"))
-	{
-		m_Terrain->generateFBM(octs, freqInfl, amplInfl, 0.0f, 0.0f);
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-	}
-
-	if (ImGui::Button("Rigid FBM"))
-	{
-		m_Terrain->generateRigidFBM(octs, freqInfl, amplInfl, 0.0f, 0.0f);
 		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 

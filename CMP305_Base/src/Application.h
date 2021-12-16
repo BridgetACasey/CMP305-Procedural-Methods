@@ -6,6 +6,7 @@
 #include "DXF.h"	// include dxframework
 #include "LightShader.h"
 #include "TerrainMesh.h"
+#include "MarkovChain.h"
 
 class Application : public BaseApplication
 {
@@ -24,13 +25,15 @@ protected:
 private:
 	LightShader* shader;
 	TerrainMesh* m_Terrain;
-
+	MarkovChain* markov;
 	Light* light;
 
 	int terrainResolution = 128;
 
 	int ampl = 1;
 	int freq = 1;
+
+	std::string markovSentence;
 };
 
 #endif

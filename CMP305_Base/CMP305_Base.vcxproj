@@ -166,6 +166,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\MarkovChain.cpp" />
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\CPerlinNoise.cpp" />
     <ClCompile Include="src\LightShader.cpp" />
@@ -174,9 +175,11 @@
     <ClCompile Include="src\TerrainMesh.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\MarkovChain.h" />
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\CPerlinNoise.h" />
     <ClInclude Include="src\LightShader.h" />
+    <ClInclude Include="src\MarkovWord.h" />
     <ClInclude Include="src\MathsUtils.h" />
     <ClInclude Include="src\PerlinNoise.h" />
     <ClInclude Include="src\TerrainMesh.h" />

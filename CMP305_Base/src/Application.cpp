@@ -4,6 +4,8 @@ Application::Application()
 {
 	m_Terrain = nullptr;
 	shader = nullptr;
+	markov = nullptr;
+	light = nullptr;
 }
 
 void Application::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight, Input *in, bool VSYNC, bool FULL_SCREEN)
@@ -27,6 +29,9 @@ void Application::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int scre
 
 	m_Terrain->BuildHeightMap();
 	m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+
+	markov = new MarkovChain("corpus.txt", 5);
+	markovSentence = markov->generateSentence("women", 1000);
 }
 
 
@@ -59,7 +64,7 @@ bool Application::frame()
 	{
 		return false;
 	}
-	
+
 	// Render the graphics.
 	result = render();
 	if (!result)
@@ -108,6 +113,8 @@ void Application::gui()
 	renderer->getDeviceContext()->DSSetShader(NULL, NULL, 0);
 
 	// Build UI
+	ImGui::TextWrapped(markovSentence.c_str());
+
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);
 

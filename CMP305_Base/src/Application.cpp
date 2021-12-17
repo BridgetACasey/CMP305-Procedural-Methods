@@ -113,7 +113,7 @@ void Application::gui()
 	renderer->getDeviceContext()->DSSetShader(NULL, NULL, 0);
 
 	// Build UI
-	ImGui::TextWrapped(markovSentence.c_str());
+	//ImGui::TextWrapped(markovSentence.c_str());
 
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Wireframe mode", &wireframeToggle);

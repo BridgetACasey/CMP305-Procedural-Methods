@@ -179,7 +179,6 @@
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\CPerlinNoise.h" />
     <ClInclude Include="src\LightShader.h" />
-    <ClInclude Include="src\MarkovWord.h" />
     <ClInclude Include="src\MathsUtils.h" />
     <ClInclude Include="src\PerlinNoise.h" />
     <ClInclude Include="src\TerrainMesh.h" />

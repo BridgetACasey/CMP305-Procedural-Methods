@@ -56,9 +56,6 @@
     <ClInclude Include="src\CPerlinNoise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\MarkovWord.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\MarkovChain.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -35,6 +35,7 @@ std::string MarkovChain::generateSentence(char* start, int length)
 		//Grab next predicted character and append to sentence
 		sentence += sampleNextCharacter(next.c_str(), sampleSize);
 
+		//Create the next sequence of characters to sample with
 		next += sentence.back();
 		next.erase(next.begin());
 	}

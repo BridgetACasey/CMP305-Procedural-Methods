@@ -44,6 +44,9 @@ float PerlinNoise::generateNoise2D(float x, float y)
 
 	int gradIndex[4];
 
+	x = MathsUtils::clamp(x, 0.0f, 510.0f);
+	y = MathsUtils::clamp(y, 0.0f, 510.0f);
+
 	current.xMin = (int)x;
 	current.yMin = (int)y;
 	current.xMax = (int)x + 1;

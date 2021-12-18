@@ -13,15 +13,17 @@ public:
 	void Resize( int newResolution );
 	void Regenerate( ID3D11Device* device, ID3D11DeviceContext* deviceContext );
 
-	void reset();
+	void flatten();
 	void invert();
 
 	void smooth();
 	void random();
 	void fault();
 
-	void kenPerlin();
+	void originalPerlin();
 	void perlin2D();
+	void generateFBM(int octaves, float ampl, float freq);
+	void generateRigidFBM(int octaves, float freq, float ampl);
 
 	const inline int GetResolution() { return resolution; }
 

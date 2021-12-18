@@ -223,7 +223,7 @@ void TerrainMesh::Regenerate( ID3D11Device * device, ID3D11DeviceContext * devic
 	indices = 0;
 }
 
-void TerrainMesh::reset()
+void TerrainMesh::flatten()
 {
 	for (int j = 0; j < (resolution); j++)
 	{
@@ -341,7 +341,7 @@ void TerrainMesh::fault()
 	}
 }
 
-void TerrainMesh::kenPerlin()
+void TerrainMesh::originalPerlin()
 {
 	float vec[2];
 
@@ -377,6 +377,75 @@ void TerrainMesh::perlin2D()
 			heightMap[(j * resolution) + i] = height;
 		}
 	}
+}
+
+void TerrainMesh::generateFBM(int octaves, float ampl, float freq)
+{
+	float height = 0.0f;
+	float x = 0.0f;
+	float y = 0.0f;
+
+	float a = amplitude;
+	float f = frequency;
+
+	for (int o = 0; o < octaves; o++)
+	{
+		for (int j = 0; j < (resolution); j++)
+		{
+			for (int i = 0; i < (resolution); i++)
+			{
+				height = heightMap[(j * resolution) + i];
+
+				x = (float)i * f;
+				y = (float)j * f;
+
+				height += perlin.generateNoise2D(x, y) * a;
+
+				heightMap[(j * resolution) + i] = height;
+			}
+		}
+
+		a *= ampl;
+		f *= freq;
+	}
+}
+
+void TerrainMesh::generateRigidFBM(int octaves, float ampl, float freq)
+{
+	float height = 0.0f;
+	float x = 0.0f;
+	float y = 0.0f;
+
+	float a = amplitude;
+	float f = frequency;
+
+	for (int o = 0; o < octaves; o++)
+	{
+		for (int j = 0; j < (resolution); j++)
+		{
+			for (int i = 0; i < (resolution); i++)
+			{
+				height = heightMap[(j * resolution) + i];
+
+				x = (float)i * f;
+				y = (float)j * f;
+
+				height -= perlin.generateNoise2D(x, y) * a;
+
+				if (height < 0.0f)
+				{
+					height = sqrtf(height * height);
+				}
+
+				heightMap[(j * resolution) + i] = height;
+			}
+		}
+
+		a *= ampl;
+		f *= freq;
+	}
+
+	invert();
 }
 
 //Create the vertex and index buffers that will be passed along to the graphics card for rendering

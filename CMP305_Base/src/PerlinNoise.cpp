@@ -5,14 +5,6 @@
 
 #include "MathsUtils.h"
 
-struct PerlinCell2D
-{
-	int xMin = 0;
-	int xMax = 0;
-	int yMin = 0;
-	int yMax = 0;
-};
-
 PerlinNoise::PerlinNoise()
 {
 	setupPermutationTable();
@@ -25,9 +17,30 @@ PerlinNoise::~PerlinNoise()
 }
 
 //TO FIX
-float PerlinNoise::generateNoise1D(float x)
+float PerlinNoise::generateNoise1D(float point)
 {
-	return 0.0f;
+	point = MathsUtils::clamp(point, 0.0f, 510.0f);
+
+	int min = (int)point;
+	int max = (int)point + 1;
+
+	float remainders[2] = { point - (float)min, point - (float)max };
+
+	float easing = fade(remainders[0]);
+
+	int i = permutationTable.at(min);
+	int j = permutationTable.at(max);
+
+	int gradIndex[2] =
+	{
+		permutationTable.at(MathsUtils::clamp(i + min, 0, 511)),
+		permutationTable.at(MathsUtils::clamp(j + max, 0, 511))
+	};
+
+	float u = remainders[0] * gradientTable1D.at(gradIndex[0]);
+	float v = remainders[1] * gradientTable1D.at(gradIndex[1]);
+
+	return MathsUtils::interpolate(u, v, easing);
 }
 
 float PerlinNoise::generateNoise2D(float x, float y)
@@ -40,33 +53,26 @@ float PerlinNoise::generateNoise2D(float x, float y)
 	//Interpolate between surrounding grid points based on new point
 	//Final scalar output is the value for the height map
 
-	PerlinCell2D current;
-
-	int gradIndex[4];
-
 	x = MathsUtils::clamp(x, 0.0f, 510.0f);
 	y = MathsUtils::clamp(y, 0.0f, 510.0f);
 
-	current.xMin = (int)x;
-	current.yMin = (int)y;
-	current.xMax = (int)x + 1;
-	current.yMax = (int)y + 1;
+	int xMin = (int)x;
+	int yMin = (int)y;
+	int xMax = (int)x + 1;
+	int yMax = (int)y + 1;
 
-	float remainders[4] =
-	{ 
-		x - current.xMin, 
-		y - current.yMin, 
-		x - current.xMax, 
-		y - current.yMax
+	int i = permutationTable.at(xMin);
+	int j = permutationTable.at(xMax);
+
+	int gradIndex[4] =
+	{
+		permutationTable.at(MathsUtils::clamp(i + yMin, 0, 511)),
+		permutationTable.at(MathsUtils::clamp(j + yMin, 0, 511)),
+		permutationTable.at(MathsUtils::clamp(i + yMax, 0, 511)),
+		permutationTable.at(MathsUtils::clamp(j + yMax, 0, 511))
 	};
 
-	int i = permutationTable.at(current.xMin);
-	int j = permutationTable.at(current.xMax);
-
-	gradIndex[0] = permutationTable.at(MathsUtils::clamp(i + current.yMin, 0, 511));
-	gradIndex[1] = permutationTable.at(MathsUtils::clamp(j + current.yMin, 0, 511));
-	gradIndex[2] = permutationTable.at(MathsUtils::clamp(i + current.yMax, 0, 511));
-	gradIndex[3] = permutationTable.at(MathsUtils::clamp(j + current.yMax, 0, 511));
+	float remainders[4] = { x - xMin, y - yMin, x - xMax, y - yMax };
 
 	float easingX = fade(remainders[0]);
 	float easingY = fade(remainders[1]);
@@ -125,6 +131,7 @@ void PerlinNoise::setupGradientTables()
 
 		MathsUtils::normalise2D(gradX, gradY);
 
+		gradientTable1D.push_back(gradX);
 		gradientTable2D.push_back(std::pair<float, float>(gradX, gradY));
 	}
 }

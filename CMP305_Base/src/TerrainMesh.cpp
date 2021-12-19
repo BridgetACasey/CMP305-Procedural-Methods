@@ -44,16 +44,25 @@ void TerrainMesh::BuildHeightMap()
 void TerrainMesh::Resize( int newResolution )
 {
 	resolution = newResolution;
+
+	if (heightMap)
+	{
+		delete[] heightMap;
+	}
+
 	heightMap = new float[resolution * resolution];
-	if( vertexBuffer != NULL ) {
+
+	if( vertexBuffer != NULL )
+	{
 		vertexBuffer->Release();
 	}
+
 	vertexBuffer = NULL;
 }
 
 // Set up the heightmap and create or update the appropriate buffers
-void TerrainMesh::Regenerate( ID3D11Device * device, ID3D11DeviceContext * deviceContext ) {
-
+void TerrainMesh::Regenerate( ID3D11Device * device, ID3D11DeviceContext * deviceContext )
+{
 	VertexType* vertices;
 	unsigned long* indices;
 	int index, i, j;
@@ -358,6 +367,20 @@ void TerrainMesh::originalPerlin()
 
 			heightMap[(j * resolution) + i] = height;
 		}
+	}
+}
+
+void TerrainMesh::perlin1D()
+{
+	for (int i = 0; i < resolution; i++)
+	{
+		float height = heightMap[(i * resolution)];
+
+		float point = (float)i * frequency;	//Scaling the input for noise
+
+		height += perlin.generateNoise1D(point) * amplitude;
+
+		heightMap[(i * resolution)] = height;
 	}
 }
 

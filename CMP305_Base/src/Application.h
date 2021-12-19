@@ -28,11 +28,6 @@ private:
 	MarkovChain* markov;
 	Light* light;
 
-	int terrainResolution = 128;
-
-	int ampl = 1;
-	int freq = 1;
-
 	std::string markovSentence;
 };
 

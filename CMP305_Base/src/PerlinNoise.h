@@ -8,7 +8,7 @@ public:
 	PerlinNoise();
 	~PerlinNoise();
 
-	float generateNoise1D(float x);
+	float generateNoise1D(float point);
 	float generateNoise2D(float x, float y);
 	float generateNoise3D(float x, float y, float z);
 

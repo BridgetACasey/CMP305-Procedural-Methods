@@ -25,7 +25,7 @@ void Application::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int scre
 	// Initialise light
 	light = new Light();
 	light->setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
-	light->setDirection(1.0f, 0.0f, 0.0f);
+	light->setDirection(0.5f, -1.0f, -0.5f);
 
 	m_Terrain->BuildHeightMap();
 	m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
@@ -114,42 +114,58 @@ void Application::gui()
 
 	// Build UI
 	//ImGui::TextWrapped(markovSentence.c_str());
+	static float cameraSpeed = 5.0f;
+
 	ImGui::Text("General");
 	ImGui::Spacing();
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Toggle Wireframe", &wireframeToggle);
+	ImGui::DragFloat("Camera Speed", &cameraSpeed, 0.1f, 0.1f, 15.0f);
+	ImGui::Separator();
+	ImGui::Spacing();
+
+	camera->move(timer->getTime() * cameraSpeed);
+
+	ImGui::Text("Lighting");
+	ImGui::Spacing();
+
+	static float diffuse[4] = { light->getDiffuseColour().x, light->getDiffuseColour().y, light->getDiffuseColour().z, light->getDiffuseColour().w };
+	static float direction[3] = { light->getDirection().x, light->getDirection().y, light->getDirection().z };
+
+	ImGui::DragFloat4("Diffuse", diffuse, 0.05f, 0.0f, 1.0f);
+	ImGui::DragFloat3("Direction", direction, 0.1f, -1.0f, 1.0f);
+
+	light->setDiffuseColour(diffuse[0], diffuse[1], diffuse[2], diffuse[3]);
+	light->setDirection(direction[0], direction[1], direction[2]);
+	
 	ImGui::Separator();
 	ImGui::Spacing();
 
 	ImGui::Text("Terrain");
 	ImGui::Spacing();
 
-	if (ImGui::SliderInt("Resolution", &terrainResolution, 2, 1024))
+	static int terrainResolution = 128;
+	static float amplitude = m_Terrain->getAmplitude();
+	static float frequency = m_Terrain->getFrequency();
+
+	if (ImGui::Button("Regenerate Terrain"))
 	{
 		if (terrainResolution != m_Terrain->GetResolution())
 		{
 			m_Terrain->Resize(terrainResolution);
 		}
 
+		m_Terrain->BuildHeightMap();
 		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
-	
-	static float amplitude = m_Terrain->getAmplitude();
 
-	if (ImGui::DragFloat("Amplitude", &amplitude, 0.25f, 1.0f, 100.0f))
-	{
-		m_Terrain->setAmplitude(amplitude);
-		shader->setAmplitude(amplitude);
-		//m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-	}
+	ImGui::SliderInt("Resolution", &terrainResolution, 2, 1024);
+	ImGui::DragFloat("Amplitude", &amplitude, 0.1f, 0.1f, 25.0f, "%.1f");
+	ImGui::DragFloat("Frequency", &frequency, 0.01f, 0.01f, 0.99f, "%.2f");
 
-	static float frequency = m_Terrain->getFrequency();
-
-	if (ImGui::DragFloat("Frequency", &frequency, 0.01f, 0.01f, 0.99f))
-	{
-		m_Terrain->setFrequency(frequency);
-		//m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-	}
+	m_Terrain->setAmplitude(amplitude);
+	shader->setAmplitude(amplitude);
+	m_Terrain->setFrequency(frequency);
 
 	ImGui::Spacing();
 
@@ -193,7 +209,8 @@ void Application::gui()
 
 	ImGui::Separator();
 	ImGui::Spacing();
-	ImGui::Text("Noise Generation");
+
+	ImGui::Text("Noise");
 	ImGui::Spacing();
 
 	if (ImGui::Button("Original Perlin"))
@@ -202,7 +219,15 @@ void Application::gui()
 		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
-	if (ImGui::Button("Perlin 2D"))
+	if (ImGui::Button("1D Perlin"))
+	{
+		m_Terrain->perlin1D();
+		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("2D Perlin"))
 	{
 		m_Terrain->perlin2D();
 		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
@@ -230,6 +255,8 @@ void Application::gui()
 		m_Terrain->generateRigidFBM(octs, amplInfl, freqInfl);
 		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
+
+	ImGui::Separator();
 
 	// Render UI
 	ImGui::Render();

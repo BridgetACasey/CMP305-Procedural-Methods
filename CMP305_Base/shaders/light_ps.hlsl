@@ -7,8 +7,8 @@ SamplerState sampler0 : register(s0);
 
 cbuffer LightBuffer : register(b0)
 {
-	float4 diffuseColour;
-	float3 lightDirection;
+    float4 diffuse;
+	float3 direction;
 	float amplitude;
 };
 
@@ -37,19 +37,12 @@ float4 main(InputType input) : SV_TARGET
 	// Sample the texture. Calculate light intensity and colour, return light*texture for final pixel colour.
 	textureColour = texture0.Sample(sampler0, input.tex);
     woodTexture = texture1.Sample(sampler0, input.tex);
-	lightColour = calculateLighting(-lightDirection, input.normal, diffuseColour);
+    lightColour = calculateLighting(-direction, input.normal, diffuse);
 	
     float height = input.worldPosition.y;
 	
-	if(height < 0.0f)
-    {
-        height *= -1.0f;
-    }
-	
     float heightMultiplier = saturate(height / amplitude);
 	
-    //textureColour *= (1.0f - heightMultiplier);
-	//woodTexture *= heightMultiplier;
     textureColour *= float4((1.0f - heightMultiplier), (1.0f - heightMultiplier), (1.0f - heightMultiplier), 1.0f);
     woodTexture *= float4(heightMultiplier, heightMultiplier, heightMultiplier, 1.0f);
 	

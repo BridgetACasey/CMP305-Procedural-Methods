@@ -2,10 +2,14 @@
 #include "System.h"
 #include "Application.h"
 
+#include <ctime>
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PSTR pScmdline, int iCmdshow)
 {
 	Application* app = new Application();
 	System* system;
+
+	srand(std::time(0));
 
 	// Create the system object.
 	system = new System(app, 1200, 675, true, false);

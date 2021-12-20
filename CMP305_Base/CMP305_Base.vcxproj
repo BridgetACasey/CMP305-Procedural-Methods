@@ -173,6 +173,7 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\PerlinNoise.cpp" />
     <ClCompile Include="src\TerrainMesh.cpp" />
+    <ClCompile Include="src\WindErosion.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\MarkovChain.h" />
@@ -182,6 +183,7 @@
     <ClInclude Include="src\MathsUtils.h" />
     <ClInclude Include="src\PerlinNoise.h" />
     <ClInclude Include="src\TerrainMesh.h" />
+    <ClInclude Include="src\WindErosion.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DXFramework\DXFramework.vcxproj">

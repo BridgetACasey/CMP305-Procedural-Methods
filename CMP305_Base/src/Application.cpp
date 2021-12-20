@@ -17,6 +17,8 @@ void Application::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int scre
 	textureMgr->loadTexture(L"grass", L"res/grass.png");
 	textureMgr->loadTexture(L"white", L"res/DefaultDiffuse.png");
 	textureMgr->loadTexture(L"wood", L"res/wood.png");
+	textureMgr->loadTexture(L"snow", L"res/snow.png");
+	textureMgr->loadTexture(L"sand", L"res/sand.jpg");
 
 	// Create Mesh object and shader object
 	m_Terrain = new TerrainMesh(renderer->getDevice(), renderer->getDeviceContext());
@@ -91,8 +93,8 @@ bool Application::render()
 	projectionMatrix = renderer->getProjectionMatrix();
 
 	// Send geometry data, set shader parameters, render object with shader
+	ID3D11ShaderResourceView* textures[] = { textureMgr->getTexture(L"sand"), textureMgr->getTexture(L"snow") };
 	m_Terrain->sendData(renderer->getDeviceContext());
-	ID3D11ShaderResourceView* textures[] = { textureMgr->getTexture(L"grass"), textureMgr->getTexture(L"wood") };
 	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textures, light);
 	shader->render(renderer->getDeviceContext(), m_Terrain->getIndexCount());
 
@@ -137,7 +139,7 @@ void Application::gui()
 
 	light->setDiffuseColour(diffuse[0], diffuse[1], diffuse[2], diffuse[3]);
 	light->setDirection(direction[0], direction[1], direction[2]);
-	
+
 	ImGui::Separator();
 	ImGui::Spacing();
 
@@ -204,6 +206,31 @@ void Application::gui()
 	if (ImGui::Button("Fault"))
 	{
 		m_Terrain->fault();
+		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+	}
+
+	if (ImGui::Button("Particle Deposition"))
+	{
+		m_Terrain->particleDeposition();
+		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+
+	}
+
+	ImGui::Separator();
+	ImGui::Spacing();
+
+	ImGui::Text("Wind Erosion");
+	ImGui::Spacing();
+
+	static int particleScale = 50000;
+	static int windIterations = 500;
+
+	ImGui::DragInt("Particle Scale", &particleScale, 500, 1000, 100000);
+	ImGui::DragInt("Wind Iterations", &windIterations, 1, 1, 25000);
+
+	if (ImGui::Button("Wind Erosion"))
+	{
+		m_Terrain->windErosion(timer->getTime(), windIterations, particleScale);
 		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 

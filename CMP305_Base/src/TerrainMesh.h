@@ -1,6 +1,7 @@
 #pragma once
 #include "PlaneMesh.h"
 #include "PerlinNoise.h"
+#include "WindErosion.h"
 
 class TerrainMesh : public PlaneMesh
 {
@@ -20,9 +21,13 @@ public:
 	void random();
 	void fault();
 
+	void particleDeposition();
+	void windErosion(float deltaTime, int iterations, float scale);
+
 	void originalPerlin();
 	void perlin1D();
 	void perlin2D();
+
 	void generateFBM(int octaves, float ampl, float freq);
 	void generateRigidFBM(int octaves, float freq, float ampl);
 
@@ -39,6 +44,7 @@ private:
 	const float m_UVscale = 10.0f;			//Tile the UV map 10 times across the plane
 	const float terrainSize = 100.0f;		//What is the width and height of our terrain
 	float* heightMap;
+	float* sedimentMap;
 
 	float amplitude;
 	float frequency;

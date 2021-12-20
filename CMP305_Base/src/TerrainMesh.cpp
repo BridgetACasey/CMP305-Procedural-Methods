@@ -17,6 +17,8 @@ TerrainMesh::~TerrainMesh()
 {
 	delete[] heightMap;
 	heightMap = 0;
+	delete[] sedimentMap;
+	sedimentMap = 0;
 }
 
 
@@ -37,6 +39,8 @@ void TerrainMesh::BuildHeightMap()
 			height = (sin((float)i * frequency * scale)) * amplitude;
 			height += (sin((float)j * frequency * scale + 1.0f));
 			heightMap[(i * resolution) + j] = height;
+
+			sedimentMap[(i * resolution) + j] = 0.0f;
 		}
 	}	
 }
@@ -58,6 +62,13 @@ void TerrainMesh::Resize( int newResolution )
 	}
 
 	vertexBuffer = NULL;
+
+	if (sedimentMap)
+	{
+		delete[] sedimentMap;
+	}
+
+	sedimentMap = new float[resolution * resolution];
 }
 
 // Set up the heightmap and create or update the appropriate buffers
@@ -350,6 +361,45 @@ void TerrainMesh::fault()
 	}
 }
 
+void TerrainMesh::particleDeposition()
+{
+	int pos[2];	//Particle position
+
+	for (int j = 0; j < (resolution); j++)
+	{
+		for (int i = 0; i < (resolution); i++)
+		{
+			float height = heightMap[(j * resolution) + i];
+		}
+	}
+}
+
+void TerrainMesh::windErosion(float deltaTime, int iterations, float scale)
+{
+	for (int j = 0; j < iterations; j++)
+	{
+		Particle originParticle;
+
+		//Spawn new particles on a boundary
+		int shift = rand() % (resolution + resolution);
+
+		if (shift < resolution)
+		{
+			originParticle.position.x = shift;
+			originParticle.position.y = 1;
+		}
+
+		else
+		{
+			originParticle.position.x = 1;
+			originParticle.position.y = shift - resolution;
+		}
+
+		WindErosion wind;
+		wind.fly(deltaTime, amplitude, heightMap, sedimentMap, originParticle, resolution, scale);
+	}
+}
+
 void TerrainMesh::originalPerlin()
 {
 	float vec[2];
@@ -455,7 +505,7 @@ void TerrainMesh::generateRigidFBM(int octaves, float ampl, float freq)
 
 				height -= perlin.generateNoise2D(x, y) * a;
 
-				if (height < 0.0f)
+				if (height < (-a))
 				{
 					height = sqrtf(height * height);
 				}

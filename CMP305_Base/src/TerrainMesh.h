@@ -22,7 +22,7 @@ public:
 	void fault();
 
 	void particleDeposition();
-	void windErosion(float deltaTime, int iterations, float scale);
+	void windErosion(float deltaTime, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set);
 
 	void originalPerlin();
 	void perlin1D();

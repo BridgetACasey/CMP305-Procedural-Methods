@@ -6,11 +6,27 @@ WindErosion::WindErosion()
 {
 }
 
+WindErosion::WindErosion(float vx, float vy, float vz)
+{
+	windVelocity.x = vx;
+	windVelocity.y = vy;
+	windVelocity.z = vz;
+}
+
 WindErosion::~WindErosion()
 {
 }
 
-void WindErosion::fly(float deltaTime, float amplitude, float* heightMap, float* sedimentMap, Particle& particle, int resolution, float scale)
+void WindErosion::setWindAttributes(float sed, float sus, float abr, float rgh, float set)
+{
+	sedimentRate = sed;
+	suspension = sus;
+	abrasion = abr;
+	roughness = rgh;
+	settling = set;
+}
+
+void WindErosion::fly(float deltaTime, float amplitude, float* heightMap, float* sedimentMap, Particle& particle, int resolution)
 {
 	int iterations = 0;
 
@@ -63,7 +79,7 @@ void WindErosion::fly(float deltaTime, float amplitude, float* heightMap, float*
 
 				float increment = (deltaTime * abrasion * force * sedimentRate);
 
-				heightMap[index] -= (scale * increment);
+				heightMap[index] -= (10000.0f * increment);	//Scaling the increment value so it has a noticeable impact on the height map
 				sedimentMap[index] += increment;
 			}
 
@@ -107,7 +123,7 @@ void WindErosion::fly(float deltaTime, float amplitude, float* heightMap, float*
 	}
 }
 
-void WindErosion::cascade(float deltaTime, int i, float* heightMap, float* sedimentMap, Particle& particle, int resolution)
+void WindErosion::cascade(float deltaTime, int index, float* heightMap, float* sedimentMap, Particle& particle, int resolution)
 {
 	//Neighbour directions (8-Way)
 	const int nX[8] = { -1,-1,-1,0,0,1,1,1 };
@@ -116,14 +132,14 @@ void WindErosion::cascade(float deltaTime, int i, float* heightMap, float* sedim
 	//Neighbour positions
 	int neighbours[8] =
 	{
-		i - resolution - 1,
-		i - resolution,
-		i - resolution + 1,
-		i - 1,
-		i + 1,
-		i + resolution - 1,
-		i + resolution,
-		i + resolution + 1
+		index - resolution - 1,
+		index - resolution,
+		index - resolution + 1,
+		index - 1,
+		index + 1,
+		index + resolution - 1,
+		index + resolution,
+		index + resolution + 1
 	};
 	
 	//Iterate over all neighbours
@@ -140,7 +156,7 @@ void WindErosion::cascade(float deltaTime, int i, float* heightMap, float* sedim
 			continue;
 	
 		//Pile Size Difference
-		float difference = (heightMap[i] + sedimentRate) - (heightMap[neighbours[m]] + sedimentRate);
+		float difference = (heightMap[index] + sedimentRate) - (heightMap[neighbours[m]] + sedimentRate);
 		float excess = abs(difference) - roughness;
 	
 		if (excess <= 0)
@@ -152,14 +168,14 @@ void WindErosion::cascade(float deltaTime, int i, float* heightMap, float* sedim
 		float transfer;
 		if (difference > 0) //Pile is Larger
 		{
-			transfer = min(sedimentMap[i], excess / 2.0);
+			transfer = min(sedimentMap[index], excess / 2.0);
 		}
-		else         //Neighbor is Larger
+		else         //Neighbour is Larger
 		{
 			transfer = -min(sedimentMap[neighbours[m]], excess / 2.0);
 		}
 	
-		sedimentMap[i] -= deltaTime * settling * transfer;
+		sedimentMap[index] -= deltaTime * settling * transfer;
 		sedimentMap[neighbours[m]] += deltaTime * settling * transfer;
 	}
 }

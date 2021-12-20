@@ -12,9 +12,11 @@ class WindErosion
 {
 public:
 	WindErosion();
+	WindErosion(float vx, float vy, float vz);
 	~WindErosion();
 
-	void fly(float deltaTime, float amplitude, float* heightMap, float* sedimentMap, Particle& particle, int resolution, float scale);
+	void setWindAttributes(float sed, float sus, float abr, float rgh, float set);
+	void fly(float deltaTime, float amplitude, float* heightMap, float* sedimentMap, Particle& particle, int resolution);
 
 private:
 	void cascade(float deltaTime, int i, float* heightMap, float* sedimentMap, Particle& particle, int resolution);

@@ -163,7 +163,7 @@ void Application::gui()
 
 	ImGui::SliderInt("Resolution", &terrainResolution, 2, 1024);
 	ImGui::DragFloat("Amplitude", &amplitude, 0.1f, 0.1f, 25.0f, "%.1f");
-	ImGui::DragFloat("Frequency", &frequency, 0.01f, 0.01f, 0.99f, "%.2f");
+	ImGui::DragFloat("Frequency", &frequency, 0.001f, 0.001f, 0.999f, "%.3f");
 
 	m_Terrain->setAmplitude(amplitude);
 	shader->setAmplitude(amplitude);
@@ -219,24 +219,6 @@ void Application::gui()
 	ImGui::Separator();
 	ImGui::Spacing();
 
-	ImGui::Text("Wind Erosion");
-	ImGui::Spacing();
-
-	static int particleScale = 50000;
-	static int windIterations = 500;
-
-	ImGui::DragInt("Particle Scale", &particleScale, 500, 1000, 100000);
-	ImGui::DragInt("Wind Iterations", &windIterations, 1, 1, 25000);
-
-	if (ImGui::Button("Wind Erosion"))
-	{
-		m_Terrain->windErosion(timer->getTime(), windIterations, particleScale);
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-	}
-
-	ImGui::Separator();
-	ImGui::Spacing();
-
 	ImGui::Text("Noise");
 	ImGui::Spacing();
 
@@ -280,6 +262,42 @@ void Application::gui()
 	if (ImGui::Button("Rigid FBM"))
 	{
 		m_Terrain->generateRigidFBM(octs, amplInfl, freqInfl);
+		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+	}
+
+	ImGui::Separator();
+	ImGui::Spacing();
+
+	ImGui::Text("Wind Erosion");
+	ImGui::Spacing();
+
+	static int particleDensity = 250;
+	static float particleVelocity[3] = { 1.0f, 0.0f, 1.0f };
+	static float windVelocity[3] = { 3.0f, -3.0f, 3.0f };
+	static float sediment = 0.01f;
+	static float suspension = 0.002f;
+	static float abrasion = 0.075f;
+	static float roughness = 0.015f;
+	static float settling = 0.05f;
+
+	ImGui::DragInt("Particle Density", &particleDensity, 1, 1, 25000);
+	ImGui::DragFloat3("Particle Vel.", particleVelocity, 0.1f, -10.0f, 10.0f);
+	ImGui::DragFloat3("Wind Vel.", windVelocity, 0.1f, -10.0f, 10.0f);
+
+	ImGui::Spacing();
+
+	ImGui::DragFloat("Sediment", &sediment, 0.001f, 0.001f, 1.0f);
+	ImGui::DragFloat("Suspension", &suspension, 0.001f, 0.001f, 1.0f);
+	ImGui::DragFloat("Abrasion", &abrasion, 0.001f, 0.001f, 1.0f);
+	ImGui::DragFloat("Roughness", &roughness, 0.001f, 0.001f, 1.0f);
+	ImGui::DragFloat("Settling", &settling, 0.001f, 0.001f, 1.0f);
+
+	ImGui::Spacing();
+
+	if (ImGui::Button("Apply Wind Erosion"))
+	{
+		m_Terrain->windErosion(timer->getTime(), particleDensity, particleVelocity,
+			windVelocity, sediment, suspension, abrasion, roughness, settling);
 		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 

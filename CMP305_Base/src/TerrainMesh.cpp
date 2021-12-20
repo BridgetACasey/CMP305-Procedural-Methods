@@ -8,8 +8,8 @@ TerrainMesh::TerrainMesh( ID3D11Device* device, ID3D11DeviceContext* deviceConte
 	Resize( resolution );
 	Regenerate( device, deviceContext );
 
-	amplitude = 2.0f;
-	frequency = 0.33f;
+	amplitude = 3.0f;
+	frequency = 0.01f;
 }
 
 //Cleanup the heightMap
@@ -374,9 +374,9 @@ void TerrainMesh::particleDeposition()
 	}
 }
 
-void TerrainMesh::windErosion(float deltaTime, int iterations, float scale)
+void TerrainMesh::windErosion(float deltaTime, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set)
 {
-	for (int j = 0; j < iterations; j++)
+	for (int j = 0; j < itr; j++)
 	{
 		Particle originParticle;
 
@@ -395,8 +395,13 @@ void TerrainMesh::windErosion(float deltaTime, int iterations, float scale)
 			originParticle.position.y = shift - resolution;
 		}
 
-		WindErosion wind;
-		wind.fly(deltaTime, amplitude, heightMap, sedimentMap, originParticle, resolution, scale);
+		originParticle.velocity.x = pVel[0];
+		originParticle.velocity.y = pVel[1];
+		originParticle.velocity.z = pVel[2];
+
+		WindErosion wind(wVel[0], wVel[1], wVel[2]);
+		wind.setWindAttributes(sed, sus, abr, rgh, set);
+		wind.fly(deltaTime, amplitude, heightMap, sedimentMap, originParticle, resolution);
 	}
 }
 

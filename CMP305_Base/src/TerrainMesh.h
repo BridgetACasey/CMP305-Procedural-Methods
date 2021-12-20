@@ -1,6 +1,7 @@
 #pragma once
+
 #include "PlaneMesh.h"
-#include "PerlinNoise.h"
+#include "Noise.h"
 #include "WindErosion.h"
 
 class TerrainMesh : public PlaneMesh
@@ -21,15 +22,12 @@ public:
 	void random();
 	void fault();
 
-	void particleDeposition();
-	void windErosion(float deltaTime, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set);
-
-	void originalPerlin();
-	void perlin1D();
 	void perlin2D();
 
 	void generateFBM(int octaves, float ampl, float freq);
 	void generateRigidFBM(int octaves, float freq, float ampl);
+
+	void windErosion(float deltaTime, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set);
 
 	const inline int GetResolution() { return resolution; }
 
@@ -49,5 +47,5 @@ private:
 	float amplitude;
 	float frequency;
 
-	PerlinNoise perlin;
+	Noise noise;
 };

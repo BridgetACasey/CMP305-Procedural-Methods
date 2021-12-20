@@ -2,9 +2,9 @@
 
 Application::Application()
 {
-	m_Terrain = nullptr;
+	terrain = nullptr;
 	shader = nullptr;
-	markov = nullptr;
+	nameChain = nullptr;
 	light = nullptr;
 }
 
@@ -21,7 +21,7 @@ void Application::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int scre
 	textureMgr->loadTexture(L"sand", L"res/sand.jpg");
 
 	// Create Mesh object and shader object
-	m_Terrain = new TerrainMesh(renderer->getDevice(), renderer->getDeviceContext());
+	terrain = new TerrainMesh(renderer->getDevice(), renderer->getDeviceContext());
 	shader = new LightShader(renderer->getDevice(), hwnd);
 	
 	// Initialise light
@@ -29,11 +29,14 @@ void Application::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int scre
 	light->setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
 	light->setDirection(0.5f, -1.0f, -0.5f);
 
-	m_Terrain->BuildHeightMap();
-	m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+	terrain->BuildHeightMap();
+	terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 
-	markov = new MarkovChain("corpus.txt", 5);
-	markovSentence = markov->generateSentence("women", 1000);
+	nameChain = new MarkovChain("name-corpus.txt", 3);
+	descriptionChain = new MarkovChain("description-corpus.txt", 4);
+
+	markovName = nameChain->generateSentence("The", 36);
+	markovDescription = descriptionChain->generateSentence("The ", 144);
 }
 
 
@@ -43,10 +46,10 @@ Application::~Application()
 	BaseApplication::~BaseApplication();
 
 	// Release the Direct3D object.
-	if (m_Terrain)
+	if (terrain)
 	{
-		delete m_Terrain;
-		m_Terrain = 0;
+		delete terrain;
+		terrain = 0;
 	}
 
 	if (shader)
@@ -94,9 +97,9 @@ bool Application::render()
 
 	// Send geometry data, set shader parameters, render object with shader
 	ID3D11ShaderResourceView* textures[] = { textureMgr->getTexture(L"sand"), textureMgr->getTexture(L"snow") };
-	m_Terrain->sendData(renderer->getDeviceContext());
+	terrain->sendData(renderer->getDeviceContext());
 	shader->setShaderParameters(renderer->getDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, textures, light);
-	shader->render(renderer->getDeviceContext(), m_Terrain->getIndexCount());
+	shader->render(renderer->getDeviceContext(), terrain->getIndexCount());
 
 	// Render GUI
 	gui();
@@ -115,7 +118,15 @@ void Application::gui()
 	renderer->getDeviceContext()->DSSetShader(NULL, NULL, 0);
 
 	// Build UI
-	//ImGui::TextWrapped(markovSentence.c_str());
+	ImGui::Text("Name: ");
+	ImGui::TextWrapped(markovName.c_str());
+	ImGui::Spacing();
+	ImGui::Text("Description: ");
+	ImGui::TextWrapped(markovDescription.c_str());
+
+	ImGui::Separator();
+	ImGui::Spacing();
+
 	static float cameraSpeed = 5.0f;
 
 	ImGui::Text("General");
@@ -143,77 +154,95 @@ void Application::gui()
 	ImGui::Separator();
 	ImGui::Spacing();
 
+	ImGui::Text("Markov Chain");
+
+	if (ImGui::Button("Generate All"))
+	{
+		markovName = nameChain->generateSentence("The", 36);
+		markovDescription = descriptionChain->generateSentence("The ", 144);
+	}
+
+	ImGui::Spacing();
+
+	if (ImGui::Button("Generate Name"))
+	{
+		markovName = nameChain->generateSentence("The", 36);
+	}
+
+	ImGui::SameLine();
+
+	if (ImGui::Button("Generate Description"))
+	{
+		markovDescription = descriptionChain->generateSentence("The ", 144);
+	}
+
+	ImGui::Separator();
+	ImGui::Spacing();
+
 	ImGui::Text("Terrain");
 	ImGui::Spacing();
 
 	static int terrainResolution = 128;
-	static float amplitude = m_Terrain->getAmplitude();
-	static float frequency = m_Terrain->getFrequency();
+	static float amplitude = terrain->getAmplitude();
+	static float frequency = terrain->getFrequency();
 
 	if (ImGui::Button("Regenerate Terrain"))
 	{
-		if (terrainResolution != m_Terrain->GetResolution())
+		if (terrainResolution != terrain->GetResolution())
 		{
-			m_Terrain->Resize(terrainResolution);
+			terrain->Resize(terrainResolution);
 		}
 
-		m_Terrain->BuildHeightMap();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+		terrain->BuildHeightMap();
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
 	ImGui::SliderInt("Resolution", &terrainResolution, 2, 1024);
 	ImGui::DragFloat("Amplitude", &amplitude, 0.1f, 0.1f, 25.0f, "%.1f");
 	ImGui::DragFloat("Frequency", &frequency, 0.001f, 0.001f, 0.999f, "%.3f");
 
-	m_Terrain->setAmplitude(amplitude);
+	terrain->setAmplitude(amplitude);
 	shader->setAmplitude(amplitude);
-	m_Terrain->setFrequency(frequency);
+	terrain->setFrequency(frequency);
 
 	ImGui::Spacing();
 
 	if (ImGui::Button("Flatten"))
 	{
-		m_Terrain->flatten();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+		terrain->flatten();
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
 	ImGui::SameLine();
 
 	if (ImGui::Button("Randomise"))
 	{
-		m_Terrain->random();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+		terrain->random();
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
 	ImGui::SameLine();
 
 	if (ImGui::Button("Invert"))
 	{
-		m_Terrain->invert();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+		terrain->invert();
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
 	ImGui::SameLine();
 
 	if (ImGui::Button("Smooth"))
 	{
-		m_Terrain->smooth();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+		terrain->smooth();
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
 	ImGui::SameLine();
 
 	if (ImGui::Button("Fault"))
 	{
-		m_Terrain->fault();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-	}
-
-	if (ImGui::Button("Particle Deposition"))
-	{
-		m_Terrain->particleDeposition();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-
+		terrain->fault();
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
 	ImGui::Separator();
@@ -222,24 +251,10 @@ void Application::gui()
 	ImGui::Text("Noise");
 	ImGui::Spacing();
 
-	if (ImGui::Button("Original Perlin"))
-	{
-		m_Terrain->originalPerlin();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-	}
-
-	if (ImGui::Button("1D Perlin"))
-	{
-		m_Terrain->perlin1D();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-	}
-
-	ImGui::SameLine();
-
 	if (ImGui::Button("2D Perlin"))
 	{
-		m_Terrain->perlin2D();
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+		terrain->perlin2D();
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
 	ImGui::Spacing();
@@ -255,14 +270,14 @@ void Application::gui()
 
 	if (ImGui::Button("Fractional Brownian Motion"))
 	{
-		m_Terrain->generateFBM(octs, amplInfl, freqInfl);
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+		terrain->generateFBM(octs, amplInfl, freqInfl);
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
 	if (ImGui::Button("Rigid FBM"))
 	{
-		m_Terrain->generateRigidFBM(octs, amplInfl, freqInfl);
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+		terrain->generateRigidFBM(octs, amplInfl, freqInfl);
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
 	ImGui::Separator();
@@ -296,9 +311,9 @@ void Application::gui()
 
 	if (ImGui::Button("Apply Wind Erosion"))
 	{
-		m_Terrain->windErosion(timer->getTime(), particleDensity, particleVelocity,
+		terrain->windErosion(timer->getTime(), particleDensity, particleVelocity,
 			windVelocity, sediment, suspension, abrasion, roughness, settling);
-		m_Terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
 	ImGui::Separator();

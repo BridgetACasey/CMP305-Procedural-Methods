@@ -24,20 +24,41 @@ MarkovChain::~MarkovChain()
 
 std::string MarkovChain::generateSentence(char* start, int length)
 {
-	std::string sentence = std::string(start);
+	std::string sentence, next;
+	int min = 0;
 
-	std::string next = std::string(start);
+	if (start)
+	{
+		sentence = std::string(start);
+		next = std::string(start);
 
-	int min = strlen(start);
+		min = strlen(start);
+	}
+
+	else
+	{
+		//If there is no starting sample, pick a random one from the lookup table
+		int index = rand() % lookupTable.size();
+
+		sentence = lookupTable.at(index).text.first;
+		next = sentence;
+
+		min = strlen(sentence.c_str());
+	}
 
 	for (int i = min; i < length; i++)
 	{
-		//Grab next predicted character and append to sentence
-		sentence += sampleNextCharacter(next.c_str(), sampleSize);
-
 		//Create the next sequence of characters to sample with
-		next += sentence.back();
+		next += sampleNextCharacter(next.c_str(), sampleSize);
 		next.erase(next.begin());
+
+		if (next.back() == '#')
+		{
+			return sentence;
+		}
+
+		//Grab next predicted character and append to sentence
+		sentence += next.back();
 	}
 
 	return sentence;

@@ -11,7 +11,6 @@
 class Application : public BaseApplication
 {
 public:
-
 	Application();
 	~Application();
 	void init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int screenHeight, Input* in, bool VSYNC, bool FULL_SCREEN);
@@ -24,11 +23,14 @@ protected:
 
 private:
 	LightShader* shader;
-	TerrainMesh* m_Terrain;
-	MarkovChain* markov;
+	TerrainMesh* terrain;
 	Light* light;
 
-	std::string markovSentence;
+	MarkovChain* nameChain;
+	MarkovChain* descriptionChain;
+
+	std::string markovName;
+	std::string markovDescription;
 };
 
 #endif

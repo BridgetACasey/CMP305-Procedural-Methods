@@ -1,23 +1,22 @@
-#include "PerlinNoise.h"
+#include "Noise.h"
 
 #include <cmath>
 #include <algorithm>
 
 #include "MathsUtils.h"
 
-PerlinNoise::PerlinNoise()
+Noise::Noise()
 {
 	setupPermutationTable();
 	setupGradientTables();
 }
 
-PerlinNoise::~PerlinNoise()
+Noise::~Noise()
 {
 
 }
 
-//TO FIX
-float PerlinNoise::generateNoise1D(float point)
+float Noise::generatePerlin1D(float point)
 {
 	point = MathsUtils::clamp(point, 0.0f, 510.0f);
 
@@ -43,7 +42,7 @@ float PerlinNoise::generateNoise1D(float point)
 	return MathsUtils::interpolate(u, v, easing);
 }
 
-float PerlinNoise::generateNoise2D(float x, float y)
+float Noise::generatePerlin2D(float x, float y)
 {
 	//Take point on height map and scale by frequency
 	//Pass into perlin function
@@ -103,12 +102,17 @@ float PerlinNoise::generateNoise2D(float x, float y)
 }
 
 //To add at a later date
-float PerlinNoise::generateNoise3D(float x, float y, float z)
+float Noise::generatePerlin3D(float x, float y, float z)
 {
 	return 0.0f;
 }
 
-void PerlinNoise::setupPermutationTable()
+float Noise::generateImprovedPerlin(float x, float y)
+{
+	return 0.0f;
+}
+
+void Noise::setupPermutationTable()
 {
 	//Assigning values uniformly to permutation table
 	for (int i = 0; i < 512; i++)
@@ -119,7 +123,7 @@ void PerlinNoise::setupPermutationTable()
 	std::random_shuffle(permutationTable.begin(), permutationTable.end());
 }
 
-void PerlinNoise::setupGradientTables()
+void Noise::setupGradientTables()
 {
 	for (int j = 0; j < 512; j++)
 	{
@@ -136,7 +140,7 @@ void PerlinNoise::setupGradientTables()
 	}
 }
 
-float PerlinNoise::fade(float t)
+float Noise::fade(float t)
 {
 	return (t * t * (3.0f - 2.0f * t));
 }

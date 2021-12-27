@@ -21,19 +21,19 @@ void Application::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int scre
 	textureMgr->loadTexture(L"sand", L"res/sand.jpg");
 
 	// Create Mesh object and shader object
-	terrain = new TerrainMesh(renderer->getDevice(), renderer->getDeviceContext());
-	shader = new LightShader(renderer->getDevice(), hwnd);
+	terrain.reset(new TerrainMesh(renderer->getDevice(), renderer->getDeviceContext()));
+	shader.reset(new LightShader(renderer->getDevice(), hwnd));
 	
 	// Initialise light
-	light = new Light();
+	light.reset(new Light());
 	light->setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
 	light->setDirection(0.5f, -1.0f, -0.5f);
 
 	terrain->BuildHeightMap();
 	terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 
-	nameChain = new MarkovChain("name-corpus.txt", 3);
-	descriptionChain = new MarkovChain("description-corpus.txt", 4);
+	nameChain.reset(new MarkovChain("name-corpus.txt", 3));
+	descriptionChain.reset(new MarkovChain("description-corpus.txt", 4));
 
 	markovName = nameChain->generateSentence("The", 36);
 	markovDescription = descriptionChain->generateSentence("The ", 144);
@@ -44,19 +44,6 @@ Application::~Application()
 {
 	// Run base application deconstructor
 	BaseApplication::~BaseApplication();
-
-	// Release the Direct3D object.
-	if (terrain)
-	{
-		delete terrain;
-		terrain = 0;
-	}
-
-	if (shader)
-	{
-		delete shader;
-		shader = 0;
-	}
 }
 
 

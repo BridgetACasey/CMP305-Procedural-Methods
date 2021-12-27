@@ -22,12 +22,12 @@ protected:
 	void gui();
 
 private:
-	LightShader* shader;
-	TerrainMesh* terrain;
-	Light* light;
+	std::unique_ptr<LightShader> shader;
+	std::unique_ptr<TerrainMesh> terrain;
+	std::unique_ptr<Light> light;
 
-	MarkovChain* nameChain;
-	MarkovChain* descriptionChain;
+	std::unique_ptr<MarkovChain> nameChain;
+	std::unique_ptr<MarkovChain> descriptionChain;
 
 	std::string markovName;
 	std::string markovDescription;

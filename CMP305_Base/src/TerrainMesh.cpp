@@ -377,6 +377,24 @@ void TerrainMesh::perlin2D()
 	}
 }
 
+void TerrainMesh::perlinImproved()
+{
+	for (int j = 0; j < (resolution); j++)
+	{
+		for (int i = 0; i < (resolution); i++)
+		{
+			float height = heightMap[(j * resolution) + i];
+
+			float x = (float)i * frequency;	//Scaling the input for noise
+			float y = (float)j * frequency;
+
+			height += noise.generateImprovedPerlin(x, y) * amplitude;
+
+			heightMap[(j * resolution) + i] = height;
+		}
+	}
+}
+
 void TerrainMesh::generateFBM(int octaves, float ampl, float freq)
 {
 	float height = 0.0f;

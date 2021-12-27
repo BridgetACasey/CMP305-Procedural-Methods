@@ -25,7 +25,7 @@ float Noise::generatePerlin1D(float point)
 
 	float remainders[2] = { point - (float)min, point - (float)max };
 
-	float easing = fade(remainders[0]);
+	float easing = MathsUtils::fadeOriginal(remainders[0]);
 
 	int i = permutationTable.at(min);
 	int j = permutationTable.at(max);
@@ -52,16 +52,13 @@ float Noise::generatePerlin2D(float x, float y)
 	//Interpolate between surrounding grid points based on new point
 	//Final scalar output is the value for the height map
 
-	x = MathsUtils::clamp(x, 0.0f, 510.0f);
-	y = MathsUtils::clamp(y, 0.0f, 510.0f);
-
 	int xMin = (int)x;
 	int yMin = (int)y;
 	int xMax = (int)x + 1;
 	int yMax = (int)y + 1;
 
-	int i = permutationTable.at(xMin);
-	int j = permutationTable.at(xMax);
+	int i = permutationTable.at(MathsUtils::clamp(xMin, 0, 511));
+	int j = permutationTable.at(MathsUtils::clamp(xMax, 0, 511));
 
 	int gradIndex[4] =
 	{
@@ -73,8 +70,8 @@ float Noise::generatePerlin2D(float x, float y)
 
 	float remainders[4] = { x - xMin, y - yMin, x - xMax, y - yMax };
 
-	float easingX = fade(remainders[0]);
-	float easingY = fade(remainders[1]);
+	float easingX = MathsUtils::fadeOriginal(remainders[0]);
+	float easingY = MathsUtils::fadeOriginal(remainders[1]);
 
 	float gradX, gradY, u, v, a, b;
 
@@ -101,15 +98,55 @@ float Noise::generatePerlin2D(float x, float y)
 	return MathsUtils::interpolate(a, b, easingY);
 }
 
-//To add at a later date
-float Noise::generatePerlin3D(float x, float y, float z)
-{
-	return 0.0f;
-}
-
 float Noise::generateImprovedPerlin(float x, float y)
 {
-	return 0.0f;
+	int xMin = (int)x;
+	int yMin = (int)y;
+	int xMax = (int)x + 1;
+	int yMax = (int)y + 1;
+
+	float remainders[4] = { x - xMin, y - yMin, x - xMax, y - yMax };
+
+	float easingX = MathsUtils::fadeImproved(remainders[0]);
+	float easingY = MathsUtils::fadeImproved(remainders[1]);
+
+	int i = permutationTable.at(MathsUtils::clamp(xMin, 0, 511));
+	int j = permutationTable.at(MathsUtils::clamp(xMax, 0, 511));
+
+	float grads[4] =
+	{
+		generateRandomGradient(permutationTable.at(MathsUtils::clamp(i + yMin, 0, 511)), remainders[0], remainders[1]),
+		generateRandomGradient(permutationTable.at(MathsUtils::clamp(j + yMin, 0, 511)), remainders[2], remainders[1]),
+		generateRandomGradient(permutationTable.at(MathsUtils::clamp(i + yMax, 0, 511)), remainders[0], remainders[3]),
+		generateRandomGradient(permutationTable.at(MathsUtils::clamp(j + yMax, 0, 511)), remainders[2], remainders[3])
+	};
+
+	float u, v, a, b;
+
+	u = MathsUtils::scalarProduct(remainders[0], remainders[1], grads[0], grads[0]);
+	v = MathsUtils::scalarProduct(remainders[2], remainders[1], grads[1], grads[1]);
+	a = MathsUtils::interpolate(u, v, easingX);
+
+	u = MathsUtils::scalarProduct(remainders[0], remainders[3], grads[2], grads[2]);
+	v = MathsUtils::scalarProduct(remainders[2], remainders[3], grads[3], grads[3]);
+	b = MathsUtils::interpolate(u, v, easingX);
+
+	return MathsUtils::interpolate(a, b, easingY);
+}
+
+float Noise::generateRandomGradient(int hash, float x, float y)
+{
+	// CONVERT LO 4 BITS OF HASH CODE
+	// INTO 12 GRADIENT DIRECTIONS.
+	int h = hash & 15;
+
+	float u = h < 8 ? x : y;
+	float v = h < 4 ? y : h == 12 || h == 14 ? x : 0;
+
+	//float result = ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+	float result = ((h & 1) == 0 ? u : -u) + ((h & 1) == 0 ? v : -v);
+
+	return result;
 }
 
 void Noise::setupPermutationTable()
@@ -138,9 +175,4 @@ void Noise::setupGradientTables()
 		gradientTable1D.push_back(gradX);
 		gradientTable2D.push_back(std::pair<float, float>(gradX, gradY));
 	}
-}
-
-float Noise::fade(float t)
-{
-	return (t * t * (3.0f - 2.0f * t));
 }

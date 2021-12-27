@@ -10,7 +10,6 @@ public:
 
 	float generatePerlin1D(float point);
 	float generatePerlin2D(float x, float y);
-	float generatePerlin3D(float x, float y, float z);
 	float generateImprovedPerlin(float x, float y);
 
 private:
@@ -19,8 +18,8 @@ private:
 	std::vector<float> gradientTable1D;
 	std::vector<std::pair<float, float>> gradientTable2D;
 
+	float generateRandomGradient(int hash, float x, float y);
+
 	void setupPermutationTable();
 	void setupGradientTables();
-
-	float fade(float t);
 };

@@ -23,6 +23,7 @@ public:
 	void fault();
 
 	void perlin2D();
+	void perlinImproved();
 
 	void generateFBM(int octaves, float ampl, float freq);
 	void generateRigidFBM(int octaves, float freq, float ampl);

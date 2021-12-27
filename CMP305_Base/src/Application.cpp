@@ -156,12 +156,6 @@ void Application::gui()
 
 	ImGui::Text("Markov Chain");
 
-	if (ImGui::Button("Generate All"))
-	{
-		markovName = nameChain->generateSentence("The", 36);
-		markovDescription = descriptionChain->generateSentence("The ", 144);
-	}
-
 	ImGui::Spacing();
 
 	if (ImGui::Button("Generate Name"))
@@ -176,6 +170,14 @@ void Application::gui()
 		markovDescription = descriptionChain->generateSentence("The ", 144);
 	}
 
+	ImGui::Spacing();
+
+	if (ImGui::Button("Generate All"))
+	{
+		markovName = nameChain->generateSentence("The", 36);
+		markovDescription = descriptionChain->generateSentence("The ", 144);
+	}
+
 	ImGui::Separator();
 	ImGui::Spacing();
 
@@ -186,17 +188,6 @@ void Application::gui()
 	static float amplitude = terrain->getAmplitude();
 	static float frequency = terrain->getFrequency();
 
-	if (ImGui::Button("Regenerate Terrain"))
-	{
-		if (terrainResolution != terrain->GetResolution())
-		{
-			terrain->Resize(terrainResolution);
-		}
-
-		terrain->BuildHeightMap();
-		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-	}
-
 	ImGui::SliderInt("Resolution", &terrainResolution, 2, 1024);
 	ImGui::DragFloat("Amplitude", &amplitude, 0.1f, 0.1f, 25.0f, "%.1f");
 	ImGui::DragFloat("Frequency", &frequency, 0.001f, 0.001f, 0.999f, "%.3f");
@@ -204,8 +195,6 @@ void Application::gui()
 	terrain->setAmplitude(amplitude);
 	shader->setAmplitude(amplitude);
 	terrain->setFrequency(frequency);
-
-	ImGui::Spacing();
 
 	if (ImGui::Button("Flatten"))
 	{
@@ -245,18 +234,23 @@ void Application::gui()
 		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
+	ImGui::Spacing();
+
+	if (ImGui::Button("Regenerate Terrain"))
+	{
+		if (terrainResolution != terrain->GetResolution())
+		{
+			terrain->Resize(terrainResolution);
+		}
+
+		terrain->BuildHeightMap();
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+	}
+
 	ImGui::Separator();
 	ImGui::Spacing();
 
 	ImGui::Text("Noise");
-	ImGui::Spacing();
-
-	if (ImGui::Button("2D Perlin"))
-	{
-		terrain->perlin2D();
-		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
-	}
-
 	ImGui::Spacing();
 
 	static int octs = 8;
@@ -267,6 +261,20 @@ void Application::gui()
 
 	static float freqInfl = 2.0f;
 	ImGui::DragFloat("Freq. Infl.", &freqInfl, 0.1f, 1.0f, 10.0f);
+
+	ImGui::Spacing();
+
+	if (ImGui::Button("Original 2D Perlin"))
+	{
+		terrain->perlin2D();
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+	}
+
+	if (ImGui::Button("Improved Perlin"))
+	{
+		terrain->perlinImproved();
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+	}
 
 	if (ImGui::Button("Fractional Brownian Motion"))
 	{

@@ -93,4 +93,14 @@ public:
 		x /= root;
 		y /= root;
 	}
+
+	static const inline float fadeOriginal(float t)
+	{
+		return (t * t * (3.0f - 2.0f * t));
+	}
+
+	static const inline float fadeImproved(float t)
+	{
+		return  t * t * t * (t * (t * 6 - 15) + 10);
+	}
 };

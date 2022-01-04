@@ -30,25 +30,22 @@ float4 calculateLighting(float3 lightDirection, float3 normal, float4 diffuse)
 
 float4 main(InputType input) : SV_TARGET
 {
-	float4 textureColour;
-    float4 woodTexture;
-	float4 lightColour;
+    float4 lightColour, textureColour, woodTexture;
 
 	// Sample the texture. Calculate light intensity and colour, return light*texture for final pixel colour.
+    lightColour = calculateLighting(-direction, input.normal, diffuse);
 	textureColour = texture0.Sample(sampler0, input.tex);
     woodTexture = texture1.Sample(sampler0, input.tex);
-    lightColour = calculateLighting(-direction, input.normal, diffuse);
 	
     float height = input.worldPosition.y;
 	
+	//Calculate a scalar value to blend the texture colours based on the height of the terrain
     float heightMultiplier = saturate(height / amplitude);
 	
     textureColour *= float4((1.0f - heightMultiplier), (1.0f - heightMultiplier), (1.0f - heightMultiplier), 1.0f);
     woodTexture *= float4(heightMultiplier, heightMultiplier, heightMultiplier, 1.0f);
-	
-    float4 finalTexture = textureColour + woodTexture;
-	
-	return lightColour * finalTexture;
+
+    return lightColour * (textureColour + woodTexture);
 }
 
 

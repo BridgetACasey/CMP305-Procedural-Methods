@@ -121,6 +121,12 @@ void Application::gui()
 	ImGui::Text("FPS: %.2f", timer->getFPS());
 	ImGui::Checkbox("Toggle Wireframe", &wireframeToggle);
 	ImGui::DragFloat("Camera Speed", &cameraSpeed, 0.1f, 0.1f, 15.0f);
+	ImGui::Spacing();
+	if (ImGui::Button("Generate Sample Terrain"))
+	{
+		terrain->renderSampleTerrain(timer->getTime());
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+	}
 	ImGui::Separator();
 	ImGui::Spacing();
 
@@ -205,21 +211,23 @@ void Application::gui()
 		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
-	ImGui::SameLine();
-
+	static int smoothItrs = 1;
 	if (ImGui::Button("Smooth"))
 	{
-		terrain->smooth();
+		terrain->smooth(smoothItrs);
 		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
-
 	ImGui::SameLine();
+	ImGui::DragInt("S Itr.", &smoothItrs, 1, 1, 10);
 
-	if (ImGui::Button("Fault"))
+	static int faultItrs = 5;
+	if (ImGui::Button("Fault "))
 	{
-		terrain->fault();
+		terrain->fault(faultItrs);
 		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
+	ImGui::SameLine();
+	ImGui::DragInt("F Itr.", &faultItrs, 1, 1, 25);
 
 	ImGui::Spacing();
 
@@ -251,25 +259,25 @@ void Application::gui()
 
 	ImGui::Spacing();
 
-	if (ImGui::Button("Original 2D Perlin"))
+	if (ImGui::Button("Original Perlin"))
 	{
-		terrain->perlin2D();
+		terrain->perlinOriginal();
 		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
-
+	ImGui::SameLine();
 	if (ImGui::Button("Improved Perlin"))
 	{
 		terrain->perlinImproved();
 		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
-	if (ImGui::Button("Fractional Brownian Motion"))
+	if (ImGui::Button("FBM"))
 	{
 		terrain->generateFBM(octs, amplInfl, freqInfl);
 		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
-
-	if (ImGui::Button("Rigid FBM"))
+	ImGui::SameLine();
+	if (ImGui::Button("Ridged FBM"))
 	{
 		terrain->generateRigidFBM(octs, amplInfl, freqInfl);
 		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
@@ -281,6 +289,7 @@ void Application::gui()
 	ImGui::Text("Wind Erosion");
 	ImGui::Spacing();
 
+	static bool weightedParticles = true;
 	static int particleDensity = 250;
 	static float particleVelocity[3] = { 1.0f, 0.0f, 1.0f };
 	static float windVelocity[3] = { 3.0f, -3.0f, 3.0f };
@@ -290,12 +299,10 @@ void Application::gui()
 	static float roughness = 0.015f;
 	static float settling = 0.05f;
 
-	ImGui::DragInt("Particle Density", &particleDensity, 1, 1, 25000);
+	ImGui::Checkbox("Weighted Particles", &weightedParticles);
+	ImGui::DragInt("P. Density", &particleDensity, 1, 1, 25000);
 	ImGui::DragFloat3("Particle Vel.", particleVelocity, 0.1f, -10.0f, 10.0f);
 	ImGui::DragFloat3("Wind Vel.", windVelocity, 0.1f, -10.0f, 10.0f);
-
-	ImGui::Spacing();
-
 	ImGui::DragFloat("Sediment", &sediment, 0.001f, 0.001f, 1.0f);
 	ImGui::DragFloat("Suspension", &suspension, 0.001f, 0.001f, 1.0f);
 	ImGui::DragFloat("Abrasion", &abrasion, 0.001f, 0.001f, 1.0f);
@@ -307,7 +314,7 @@ void Application::gui()
 	if (ImGui::Button("Apply Wind Erosion"))
 	{
 		terrain->windErosion(timer->getTime(), particleDensity, particleVelocity,
-			windVelocity, sediment, suspension, abrasion, roughness, settling);
+			windVelocity, sediment, suspension, abrasion, roughness, settling, weightedParticles);
 		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 

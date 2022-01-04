@@ -15,20 +15,22 @@ public:
 	void Resize( int newResolution );
 	void Regenerate( ID3D11Device* device, ID3D11DeviceContext* deviceContext );
 
+	void renderSampleTerrain(float deltaTime);
+
 	void flatten();
 	void invert();
-
-	void smooth();
 	void random();
-	void fault();
 
-	void perlin2D();
+	void smooth(int itr);
+	void fault(int itr);
+
+	void perlinOriginal();
 	void perlinImproved();
 
 	void generateFBM(int octaves, float ampl, float freq);
 	void generateRigidFBM(int octaves, float freq, float ampl);
 
-	void windErosion(float deltaTime, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set);
+	void windErosion(float deltaTime, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set, bool weigh);
 
 	const inline int GetResolution() { return resolution; }
 

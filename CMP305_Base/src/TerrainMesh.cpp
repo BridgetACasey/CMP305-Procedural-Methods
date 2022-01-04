@@ -241,6 +241,18 @@ void TerrainMesh::Regenerate( ID3D11Device * device, ID3D11DeviceContext * devic
 	indices = 0;
 }
 
+void TerrainMesh::renderSampleTerrain(float deltaTime)
+{
+	amplitude = 20.0f;
+	frequency = 0.03f;
+
+	float pVel[3] = { 1.0f, 0.0f, 1.0f };
+	float wVel[3] = { 3.0f, -3.0f, 3.0f };
+
+	generateRigidFBM(8, 0.4f, 0.2f);
+	windErosion(deltaTime, 300, pVel, wVel, 0.01f, 0.002f, 0.075f, 0.015f, 0.05f, true);
+}
+
 void TerrainMesh::flatten()
 {
 	for (int j = 0; j < (resolution); j++)
@@ -263,53 +275,6 @@ void TerrainMesh::invert()
 	}
 }
 
-void TerrainMesh::smooth()
-{
-	float height = 0.0f;
-	float finalHeight = 0.0f;
-	int neighbours = 0;
-	int MAX_BOUND = resolution * resolution;
-	int currentVertex = 0;
-
-	for (int j = 0; j < (resolution); j++)
-	{
-		for (int i = 0; i < (resolution); i++)
-		{
-			currentVertex = (j * resolution) + i;
-			neighbours = 0;
-			finalHeight = 0.0f;
-			height = 0.0f;
-
-			if ((currentVertex) + 1 < MAX_BOUND)
-			{
-				height += heightMap[((j * resolution) + i) + 1];
-				neighbours++;
-			}
-
-			if ((currentVertex) - 1 > 0)
-			{
-				height += heightMap[currentVertex - 1];
-				neighbours++;
-			}
-
-			if ((currentVertex) + resolution < MAX_BOUND)
-			{
-				height += heightMap[currentVertex + resolution];
-				neighbours++;
-			}
-
-			if ((currentVertex) - resolution > 0)
-			{
-				height += heightMap[currentVertex - resolution];
-				neighbours++;
-			}
-
-			finalHeight = (height) / (float)neighbours;
-			heightMap[currentVertex] = finalHeight;
-		}
-	}
-}
-
 void TerrainMesh::random()
 {
 	float height = 0.0f;
@@ -323,43 +288,101 @@ void TerrainMesh::random()
 	}
 }
 
-void TerrainMesh::fault()
+void TerrainMesh::smooth(int itr)
 {
-	float startPoint[2] = { (rand() % resolution), (rand() % resolution) };	//P1
-	float endPoint[2] = { (rand() % resolution), (rand() % resolution) };	//P2
-
-	float nextPoint[2] = { 0.0f, 0.0f };	//The coordinates of the next vertex to check
-
-	XMFLOAT3 lineOne = { endPoint[0] - startPoint[0], endPoint[1] - startPoint[1], 0.0f };	//L1
-	XMFLOAT3 lineTwo = { 0.0f, 0.0f, 0.0f };	//L2
-	XMFLOAT3 cross{};	//To store the result of the cross product
-
-	for (int j = 0; j < (resolution); j++)
+	for (int k = 0; k < itr; k++)
 	{
-		nextPoint[0] = (float)j;
+		float height = 0.0f;
+		float finalHeight = 0.0f;
+		int neighbours = 0;
+		int MAX_BOUND = resolution * resolution;
+		int currentVertex = 0;
 
-		for (int i = 0; i < (resolution); i++)
+		for (int j = 0; j < (resolution); j++)
 		{
-			nextPoint[1] = (float)i;
-
-			lineTwo = {startPoint[0] - nextPoint[0], startPoint[1] - nextPoint[1], 0.0f};
-
-			XMStoreFloat3(&cross, XMVector3Cross(XMLoadFloat3(&lineOne), XMLoadFloat3(&lineTwo)));
-
-			if (cross.z > 0.0f)
+			for (int i = 0; i < (resolution); i++)
 			{
-				heightMap[(j * resolution) + i] += amplitude;
-			}
+				currentVertex = (j * resolution) + i;
+				neighbours = 0;
+				finalHeight = 0.0f;
+				height = 0.0f;
 
-			else if (cross.z <= 0.0f)
-			{
-				heightMap[(j * resolution) + i] -= amplitude;
+				if ((currentVertex)+1 < MAX_BOUND)
+				{
+					height += heightMap[((j * resolution) + i) + 1];
+					neighbours++;
+				}
+
+				if ((currentVertex)-1 > 0)
+				{
+					height += heightMap[currentVertex - 1];
+					neighbours++;
+				}
+
+				if ((currentVertex)+resolution < MAX_BOUND)
+				{
+					height += heightMap[currentVertex + resolution];
+					neighbours++;
+				}
+
+				if ((currentVertex)-resolution > 0)
+				{
+					height += heightMap[currentVertex - resolution];
+					neighbours++;
+				}
+
+				finalHeight = (height) / (float)neighbours;
+				heightMap[currentVertex] = finalHeight;
 			}
 		}
 	}
 }
 
-void TerrainMesh::perlin2D()
+void TerrainMesh::fault(int itr)
+{
+	float faultFactor = 1.0f / itr;
+	float faultMultiplier = 1.0f + faultFactor;
+
+	for (int k = 0; k < itr; k++)
+	{
+		float startPoint[2] = { (rand() % resolution), (rand() % resolution) };	//P1
+		float endPoint[2] = { (rand() % resolution), (rand() % resolution) };	//P2
+
+		float nextPoint[2] = { 0.0f, 0.0f };	//The coordinates of the next vertex to check
+
+		XMFLOAT3 lineOne = { endPoint[0] - startPoint[0], endPoint[1] - startPoint[1], 0.0f };	//L1
+		XMFLOAT3 lineTwo = { 0.0f, 0.0f, 0.0f };	//L2
+		XMFLOAT3 cross{};	//To store the result of the cross product
+
+		for (int j = 0; j < (resolution); j++)
+		{
+			nextPoint[0] = (float)j;
+
+			for (int i = 0; i < (resolution); i++)
+			{
+				nextPoint[1] = (float)i;
+
+				lineTwo = { startPoint[0] - nextPoint[0], startPoint[1] - nextPoint[1], 0.0f };
+
+				XMStoreFloat3(&cross, XMVector3Cross(XMLoadFloat3(&lineOne), XMLoadFloat3(&lineTwo)));
+
+				if (cross.z > 0.0f)
+				{
+					heightMap[(j * resolution) + i] += (amplitude * faultMultiplier);
+				}
+
+				else if (cross.z <= 0.0f)
+				{
+					heightMap[(j * resolution) + i] -= (amplitude * faultMultiplier);
+				}
+			}
+		}
+
+		faultMultiplier -= faultFactor;
+	}
+}
+
+void TerrainMesh::perlinOriginal()
 {
 	for (int j = 0; j < (resolution); j++)
 	{
@@ -416,6 +439,7 @@ void TerrainMesh::generateFBM(int octaves, float ampl, float freq)
 				y = (float)j * f;
 
 				height += noise.generatePerlin2D(x, y) * a;
+				//height += noise.generateImprovedPerlin(x, y) * a;
 
 				heightMap[(j * resolution) + i] = height;
 			}
@@ -447,8 +471,9 @@ void TerrainMesh::generateRigidFBM(int octaves, float ampl, float freq)
 				y = (float)j * f;
 
 				height -= noise.generatePerlin2D(x, y) * a;
+				//height -= noise.generateImprovedPerlin(x, y) * a;
 
-				if (height < (-a))
+				if (height < (-a))	//Negative amplitude represents the lowest point of the height map
 				{
 					height = sqrtf(height * height);
 				}
@@ -464,25 +489,33 @@ void TerrainMesh::generateRigidFBM(int octaves, float ampl, float freq)
 	invert();
 }
 
-void TerrainMesh::windErosion(float deltaTime, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set)
+void TerrainMesh::windErosion(float deltaTime, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set, bool weigh)
 {
 	for (int j = 0; j < itr; j++)
 	{
-		Particle originParticle;
+		WindParticle originParticle;
 
 		//Spawn new particles on a boundary
 		int shift = rand() % (resolution + resolution);
 
-		if (shift < resolution)
+		if (shift < resolution)	//Spawn along x boundary
 		{
 			originParticle.position.x = shift;
+
+			if (originParticle.velocity.z > 0.0f)
 			originParticle.position.y = 1;
+			else
+			originParticle.position.y = (resolution - 1);
 		}
 
-		else
+		else //Spawn along z boundary
 		{
-			originParticle.position.x = 1;
 			originParticle.position.y = shift - resolution;
+
+			if (originParticle.velocity.x > 0.0f)
+				originParticle.position.x = 1;
+			else
+				originParticle.position.x = (resolution - 1);
 		}
 
 		originParticle.velocity.x = pVel[0];
@@ -490,7 +523,7 @@ void TerrainMesh::windErosion(float deltaTime, int itr, float* pVel, float* wVel
 		originParticle.velocity.z = pVel[2];
 
 		WindErosion wind(wVel[0], wVel[1], wVel[2]);
-		wind.setWindAttributes(sed, sus, abr, rgh, set);
+		wind.setWindAttributes(sed, sus, abr, rgh, set, weigh);
 		wind.fly(deltaTime, amplitude, heightMap, sedimentMap, originParticle, resolution);
 	}
 }

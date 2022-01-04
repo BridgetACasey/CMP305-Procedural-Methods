@@ -26,11 +26,10 @@ void Application::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int scre
 	
 	// Initialise light
 	light.reset(new Light());
-	light->setDiffuseColour(1.0f, 1.0f, 1.0f, 1.0f);
+	light->setDiffuseColour(1.0f, 0.9f, 0.9f, 1.0f);
 	light->setDirection(0.5f, -1.0f, -0.5f);
 
 	terrain->BuildHeightMap();
-	terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 
 	nameChain.reset(new MarkovChain("name-corpus.txt", 3));
 	descriptionChain.reset(new MarkovChain("description-corpus.txt", 4));
@@ -72,7 +71,7 @@ bool Application::render()
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 
 	// Clear the scene. (default blue colour)
-	renderer->beginScene(0.39f, 0.58f, 0.92f, 1.0f);
+	renderer->beginScene(0.74f, 0.52f, 0.48f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
 	camera->update();
@@ -93,6 +92,13 @@ bool Application::render()
 
 	// Swap the buffers
 	renderer->endScene();
+
+	if (startup)
+	{
+		terrain->renderSampleTerrain(timer->getTime());
+		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
+		startup = false;
+	}
 
 	return true;
 }
@@ -254,8 +260,8 @@ void Application::gui()
 	static float amplInfl = 0.4f;
 	ImGui::DragFloat("Ampl. Infl.", &amplInfl, 0.1f, 0.01f, 0.99f);
 
-	static float freqInfl = 2.0f;
-	ImGui::DragFloat("Freq. Infl.", &freqInfl, 0.1f, 1.0f, 10.0f);
+	static float freqInfl = 1.2f;
+	ImGui::DragFloat("Freq. Infl.", &freqInfl, 0.1f, 0.01f, 10.0f);
 
 	ImGui::Spacing();
 

@@ -243,14 +243,18 @@ void TerrainMesh::Regenerate( ID3D11Device * device, ID3D11DeviceContext * devic
 
 void TerrainMesh::renderSampleTerrain(float deltaTime)
 {
-	amplitude = 20.0f;
-	frequency = 0.03f;
+	flatten();
 
 	float pVel[3] = { 1.0f, 0.0f, 1.0f };
-	float wVel[3] = { 3.0f, -3.0f, 3.0f };
+	float wVel[3] = { 3.0f, -1.0f, 3.0f };
 
-	generateRigidFBM(8, 0.4f, 0.2f);
-	windErosion(deltaTime, 300, pVel, wVel, 0.01f, 0.002f, 0.075f, 0.015f, 0.05f, true);
+	amplitude = 32.0f;
+	frequency = 0.033f;
+
+	generateRigidFBM(8, 0.4f, 1.2f);
+	frequency = 0.015f;
+	generateFBM(8, 0.5f, 1.1f);
+	windErosion(deltaTime, 300, pVel, wVel, 0.001f, 0.003f, 0.05f, 0.001f, 0.05f, true);
 }
 
 void TerrainMesh::flatten()
@@ -438,8 +442,8 @@ void TerrainMesh::generateFBM(int octaves, float ampl, float freq)
 				x = (float)i * f;
 				y = (float)j * f;
 
-				height += noise.generatePerlin2D(x, y) * a;
-				//height += noise.generateImprovedPerlin(x, y) * a;
+				//height += noise.generatePerlin2D(x, y) * a;
+				height += noise.generateImprovedPerlin(x, y) * a;
 
 				heightMap[(j * resolution) + i] = height;
 			}
@@ -470,8 +474,8 @@ void TerrainMesh::generateRigidFBM(int octaves, float ampl, float freq)
 				x = (float)i * f;
 				y = (float)j * f;
 
-				height -= noise.generatePerlin2D(x, y) * a;
-				//height -= noise.generateImprovedPerlin(x, y) * a;
+				//height -= noise.generatePerlin2D(x, y) * a;
+				height -= noise.generateImprovedPerlin(x, y) * a;
 
 				if (height < (-a))	//Negative amplitude represents the lowest point of the height map
 				{

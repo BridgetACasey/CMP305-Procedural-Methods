@@ -31,6 +31,8 @@ private:
 
 	std::string markovName;
 	std::string markovDescription;
+
+	bool startup = true;
 };
 
 #endif

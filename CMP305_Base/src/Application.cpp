@@ -32,10 +32,8 @@ void Application::init(HINSTANCE hinstance, HWND hwnd, int screenWidth, int scre
 	terrain->BuildHeightMap();
 
 	nameChain.reset(new MarkovChain("name-corpus.txt", 3));
-	descriptionChain.reset(new MarkovChain("description-corpus.txt", 4));
 
-	markovName = nameChain->generateSentence("The", 36);
-	markovDescription = descriptionChain->generateSentence("The ", 144);
+	markovName = nameChain->generateSentence("The");
 }
 
 
@@ -70,7 +68,7 @@ bool Application::render()
 {
 	XMMATRIX worldMatrix, viewMatrix, projectionMatrix;
 
-	// Clear the scene. (default blue colour)
+	// Clear the scene
 	renderer->beginScene(0.74f, 0.52f, 0.48f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
@@ -93,6 +91,7 @@ bool Application::render()
 	// Swap the buffers
 	renderer->endScene();
 
+	//Generating the sample terrain upon application launch
 	if (startup)
 	{
 		terrain->renderSampleTerrain(timer->getTime());
@@ -111,15 +110,6 @@ void Application::gui()
 	renderer->getDeviceContext()->DSSetShader(NULL, NULL, 0);
 
 	// Build UI
-	ImGui::Text("Name: ");
-	ImGui::TextWrapped(markovName.c_str());
-	ImGui::Spacing();
-	ImGui::Text("Description: ");
-	ImGui::TextWrapped(markovDescription.c_str());
-
-	ImGui::Separator();
-	ImGui::Spacing();
-
 	static float cameraSpeed = 5.0f;
 
 	ImGui::Text("General");
@@ -156,25 +146,13 @@ void Application::gui()
 	ImGui::Text("Markov Chain");
 
 	ImGui::Spacing();
+	ImGui::Text("Name: ");
+	ImGui::TextWrapped(markovName.c_str());
+	ImGui::Spacing();
 
 	if (ImGui::Button("Generate Name"))
 	{
-		markovName = nameChain->generateSentence("The", 36);
-	}
-
-	ImGui::SameLine();
-
-	if (ImGui::Button("Generate Description"))
-	{
-		markovDescription = descriptionChain->generateSentence("The ", 144);
-	}
-
-	ImGui::Spacing();
-
-	if (ImGui::Button("Generate All"))
-	{
-		markovName = nameChain->generateSentence("The", 36);
-		markovDescription = descriptionChain->generateSentence("The ", 144);
+		markovName = nameChain->generateSentence("The");
 	}
 
 	ImGui::Separator();
@@ -297,8 +275,8 @@ void Application::gui()
 
 	static bool weightedParticles = true;
 	static int particleDensity = 250;
-	static float particleVelocity[3] = { 1.0f, 0.0f, 1.0f };
-	static float windVelocity[3] = { 3.0f, -3.0f, 3.0f };
+	static float particleVelocity[3] = { 3.0f, 0.0f, 3.0f };
+	static float windVelocity[3] = { 3.0f, -1.0f, 3.0f };
 	static float sediment = 0.01f;
 	static float suspension = 0.002f;
 	static float abrasion = 0.075f;

@@ -27,12 +27,10 @@ private:
 	std::unique_ptr<Light> light;
 
 	std::unique_ptr<MarkovChain> nameChain;
-	std::unique_ptr<MarkovChain> descriptionChain;
 
 	std::string markovName;
-	std::string markovDescription;
 
-	bool startup = true;
+	bool startup = true; //To check if the application has just launched and the sample terrain should be generated
 };
 
 #endif

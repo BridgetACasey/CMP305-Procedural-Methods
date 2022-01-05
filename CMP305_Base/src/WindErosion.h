@@ -5,7 +5,7 @@
 struct WindParticle
 {
 	XMFLOAT2 position = { 0.0f, 0.0f };
-	XMFLOAT3 velocity = { 1.0f, 0.0f, 1.0f };
+	XMFLOAT3 velocity = { 3.0f, 0.0f, 3.0f };
 };
 
 class WindErosion
@@ -20,9 +20,9 @@ public:
 
 private:
 	void cascade(float deltaTime, int i, float* heightMap, float* sedimentMap, WindParticle& particle, int resolution);
-	XMFLOAT2 calculateParticleWeight(float deltaTime, WindParticle& particle, XMFLOAT2 posIncrement, float* heightMap, int index, int resolution);
+	XMFLOAT2 calculateParticleWeight(float deltaTime, WindParticle& particle, XMFLOAT2 direction, float* heightMap, int index, int resolution);
 
-	XMFLOAT3 windVelocity = { 3.0f, -3.0f, 3.0f };
+	XMFLOAT3 windVelocity = { 3.0f, -1.0f, 3.0f };
 
 	bool weightedParticles = true;
 	float height = 0.0f;

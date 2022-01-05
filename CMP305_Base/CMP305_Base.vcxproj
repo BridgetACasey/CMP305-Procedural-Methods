@@ -170,7 +170,7 @@
     <ClCompile Include="src\Application.cpp" />
     <ClCompile Include="src\LightShader.cpp" />
     <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\Noise.cpp" />
+    <ClCompile Include="src\PerlinNoise.cpp" />
     <ClCompile Include="src\TerrainMesh.cpp" />
     <ClCompile Include="src\WindErosion.cpp" />
   </ItemGroup>
@@ -179,7 +179,7 @@
     <ClInclude Include="src\Application.h" />
     <ClInclude Include="src\LightShader.h" />
     <ClInclude Include="src\MathsUtils.h" />
-    <ClInclude Include="src\Noise.h" />
+    <ClInclude Include="src\PerlinNoise.h" />
     <ClInclude Include="src\TerrainMesh.h" />
     <ClInclude Include="src\WindErosion.h" />
   </ItemGroup>

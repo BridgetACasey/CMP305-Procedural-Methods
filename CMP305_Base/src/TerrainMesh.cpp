@@ -245,7 +245,7 @@ void TerrainMesh::renderSampleTerrain(float deltaTime)
 {
 	flatten();
 
-	float pVel[3] = { 1.0f, 0.0f, 1.0f };
+	float pVel[3] = { 3.0f, 0.0f, 3.0f };
 	float wVel[3] = { 3.0f, -1.0f, 3.0f };
 
 	amplitude = 32.0f;
@@ -254,7 +254,7 @@ void TerrainMesh::renderSampleTerrain(float deltaTime)
 	generateRigidFBM(8, 0.4f, 1.2f);
 	frequency = 0.015f;
 	generateFBM(8, 0.5f, 1.1f);
-	windErosion(deltaTime, 300, pVel, wVel, 0.001f, 0.003f, 0.05f, 0.001f, 0.05f, true);
+	windErosion(deltaTime, 300, pVel, wVel, 0.001f, 0.003f, 0.015f, 0.001f, 0.025f, true);
 }
 
 void TerrainMesh::flatten()

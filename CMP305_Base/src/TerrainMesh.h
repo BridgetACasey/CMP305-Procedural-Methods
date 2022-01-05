@@ -1,7 +1,7 @@
 #pragma once
 
 #include "PlaneMesh.h"
-#include "Noise.h"
+#include "PerlinNoise.h"
 #include "WindErosion.h"
 
 class TerrainMesh : public PlaneMesh
@@ -50,5 +50,5 @@ private:
 	float amplitude;
 	float frequency;
 
-	Noise noise;
+	PerlinNoise noise;
 };

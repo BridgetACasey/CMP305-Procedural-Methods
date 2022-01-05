@@ -17,14 +17,13 @@ public:
 	MarkovChain(const char* fileName, int sample);
 	~MarkovChain();
 
-	void generateLookupTable(const char* fileName, int sample);
-
-	std::string generateSentence(char* startWord, int length);
+	std::string generateSentence(char* startWord);
 
 private:
-	void loadTextData(const char* fileName);
-
 	std::string sampleNextCharacter(const char* start, int sample);
+
+	void generateLookupTable(const char* fileName, int sample);
+	void loadTextData(const char* fileName);
 
 	std::vector<MarkovWord> lookupTable;
 	std::string data;

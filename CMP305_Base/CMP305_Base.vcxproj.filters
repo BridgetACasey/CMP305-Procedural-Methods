@@ -33,7 +33,7 @@
     <ClCompile Include="src\WindErosion.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Noise.cpp">
+    <ClCompile Include="src\PerlinNoise.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,7 +56,7 @@
     <ClInclude Include="src\WindErosion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Noise.h">
+    <ClInclude Include="src\PerlinNoise.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

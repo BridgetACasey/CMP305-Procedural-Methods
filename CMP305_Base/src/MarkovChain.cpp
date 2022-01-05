@@ -22,7 +22,7 @@ MarkovChain::~MarkovChain()
 {
 }
 
-std::string MarkovChain::generateSentence(char* start, int length)
+std::string MarkovChain::generateSentence(char* start)
 {
 	std::string sentence, next;
 	int min = 0;
@@ -46,15 +46,16 @@ std::string MarkovChain::generateSentence(char* start, int length)
 		min = strlen(sentence.c_str());
 	}
 
-	for (int i = min; i < length; i++)
+	while(true)
 	{
 		//Create the next sequence of characters to sample with
 		next += sampleNextCharacter(next.c_str(), sampleSize);
 		next.erase(next.begin());
 
+		//This character signifies that an appropriate ending word has been generated
 		if (next.back() == '#')
 		{
-			return sentence;
+			break;
 		}
 
 		//Grab next predicted character and append to sentence

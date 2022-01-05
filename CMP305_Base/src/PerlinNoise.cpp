@@ -1,24 +1,24 @@
-#include "Noise.h"
+#include "PerlinNoise.h"
 
 #include <cmath>
 #include <algorithm>
 
 #include "MathsUtils.h"
 
-Noise::Noise()
+PerlinNoise::PerlinNoise()
 {
 	setupPermutationTable();
 	setupGradientTables();
 }
 
-Noise::~Noise()
+PerlinNoise::~PerlinNoise()
 {
 
 }
 
-float Noise::generatePerlin1D(float point)
+float PerlinNoise::generatePerlin1D(float point)
 {
-	point = MathsUtils::clamp(point, 0.0f, 510.0f);
+	point = MathsUtils::clamp(point, 0.0f, 511.0f);
 
 	int min = (int)point;
 	int max = (int)point + 1;
@@ -42,7 +42,7 @@ float Noise::generatePerlin1D(float point)
 	return MathsUtils::interpolate(u, v, easing);
 }
 
-float Noise::generatePerlin2D(float x, float y)
+float PerlinNoise::generatePerlin2D(float x, float y)
 {
 	//Take point on height map and scale by frequency
 	//Pass into perlin function
@@ -98,7 +98,7 @@ float Noise::generatePerlin2D(float x, float y)
 	return MathsUtils::interpolate(a, b, easingY);
 }
 
-float Noise::generateImprovedPerlin(float x, float y)
+float PerlinNoise::generateImprovedPerlin(float x, float y)
 {
 	int xMin = (int)x;
 	int yMin = (int)y;
@@ -133,22 +133,7 @@ float Noise::generateImprovedPerlin(float x, float y)
 	return MathsUtils::interpolate(a, b, easingY);
 }
 
-float Noise::generateRandomGradient(int hash, float x, float y)
-{
-	// CONVERT LO 4 BITS OF HASH CODE
-	// INTO 12 GRADIENT DIRECTIONS.
-	int h = hash & 15;
-
-	float u = h < 8 ? x : y;
-	float v = h < 4 ? y : h == 12 || h == 14 ? x : 0;
-
-	//float result = ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-	float result = ((h & 1) == 0 ? u : -u) + ((h & 1) == 0 ? v : -v);
-
-	return result;
-}
-
-XMFLOAT2 Noise::generateGrad(int hash, float x, float y)
+XMFLOAT2 PerlinNoise::generateGrad(int hash, float x, float y)
 {
 	int h = hash & 15;
 
@@ -157,15 +142,11 @@ XMFLOAT2 Noise::generateGrad(int hash, float x, float y)
 
 	u = (h & 2) == 0 ? u : -u;
 	v = (h & 2) == 0 ? v : -v;
-	//float result = ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-	//float result = ((h & 1) == 0 ? u : -u) + ((h & 1) == 0 ? v : -v);
-
-	//MathsUtils::normalise2D(u, v);
 
 	return XMFLOAT2(u, v);
 }
 
-void Noise::setupPermutationTable()
+void PerlinNoise::setupPermutationTable()
 {
 	//Assigning values uniformly to permutation table
 	for (int i = 0; i < 512; i++)
@@ -176,7 +157,7 @@ void Noise::setupPermutationTable()
 	std::random_shuffle(permutationTable.begin(), permutationTable.end());
 }
 
-void Noise::setupGradientTables()
+void PerlinNoise::setupGradientTables()
 {
 	for (int j = 0; j < 512; j++)
 	{

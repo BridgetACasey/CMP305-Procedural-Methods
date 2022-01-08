@@ -6,8 +6,8 @@ TerrainMesh::TerrainMesh( ID3D11Device* device, ID3D11DeviceContext* deviceConte
 	Resize( resolution );
 	Regenerate( device, deviceContext );
 
-	amplitude = 3.0f;
-	frequency = 0.01f;
+	amplitude = 6.0f;
+	frequency = 0.015f;
 }
 
 //Cleanup the heightMap
@@ -241,20 +241,18 @@ void TerrainMesh::Regenerate( ID3D11Device * device, ID3D11DeviceContext * devic
 	indices = 0;
 }
 
-void TerrainMesh::renderSampleTerrain(float deltaTime)
+void TerrainMesh::renderSampleTerrain(float dt)
 {
 	flatten();
 
-	float pVel[3] = { 3.0f, 0.0f, 3.0f };
-	float wVel[3] = { 3.0f, -1.0f, 3.0f };
-
-	amplitude = 32.0f;
+	amplitude = 28.0f;
 	frequency = 0.033f;
 
 	generateRigidFBM(8, 0.4f, 1.2f);
+
 	frequency = 0.015f;
+
 	generateFBM(8, 0.5f, 1.1f);
-	windErosion(deltaTime, 300, pVel, wVel, 0.001f, 0.003f, 0.015f, 0.001f, 0.025f, true);
 }
 
 void TerrainMesh::flatten()
@@ -493,12 +491,12 @@ void TerrainMesh::generateRigidFBM(int octaves, float ampl, float freq)
 	invert();
 }
 
-void TerrainMesh::windErosion(float deltaTime, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set, bool weigh)
+void TerrainMesh::windErosion(float dt, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set, bool weigh)
 {
 	for (int j = 0; j < itr; j++)
 	{
 		WindParticle originParticle;
-
+		int index = 0;
 		//Spawn new particles on a boundary
 		int shift = rand() % (resolution + resolution);
 
@@ -507,7 +505,7 @@ void TerrainMesh::windErosion(float deltaTime, int itr, float* pVel, float* wVel
 			originParticle.position.x = shift;
 
 			if (originParticle.velocity.z > 0.0f)
-			originParticle.position.y = 1;
+			originParticle.position.y = 0;
 			else
 			originParticle.position.y = (resolution - 1);
 		}
@@ -517,7 +515,7 @@ void TerrainMesh::windErosion(float deltaTime, int itr, float* pVel, float* wVel
 			originParticle.position.y = shift - resolution;
 
 			if (originParticle.velocity.x > 0.0f)
-				originParticle.position.x = 1;
+				originParticle.position.x = 0;
 			else
 				originParticle.position.x = (resolution - 1);
 		}
@@ -526,9 +524,15 @@ void TerrainMesh::windErosion(float deltaTime, int itr, float* pVel, float* wVel
 		originParticle.velocity.y = pVel[1];
 		originParticle.velocity.z = pVel[2];
 
+		//Keeping the edge of the terrain constant to prevent particles from slipping and creating pits
+		index = (int)((originParticle.position.y * resolution) + originParticle.position.x);
+		float edgeHeight = heightMap[index];
+
 		WindErosion wind(wVel[0], wVel[1], wVel[2]);
 		wind.setWindAttributes(sed, sus, abr, rgh, set, weigh);
-		wind.fly(deltaTime, amplitude, heightMap, sedimentMap, originParticle, resolution);
+		wind.fly(dt, amplitude, heightMap, sedimentMap, originParticle, resolution);
+
+		heightMap[index] = edgeHeight;
 	}
 }
 

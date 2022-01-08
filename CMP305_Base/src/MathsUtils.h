@@ -94,6 +94,20 @@ public:
 		y /= root;
 	}
 
+	static const inline void normalise3D(XMFLOAT3& v)
+	{
+		//float root = sqrt((v.x * v.x) + (v.y * v.y) + (v.z * v.z));
+		//
+		//v.x /= root;
+		//v.y /= root;
+
+		float length = magnitude3(v.x, v.y, v.z);
+
+		v.x /= length;
+		v.y /= length;
+		v.z /= length;
+	}
+
 	static const inline float fadeOriginal(float t)
 	{
 		return (t * t * (3.0f - 2.0f * t));
@@ -102,5 +116,22 @@ public:
 	static const inline float fadeImproved(float t)
 	{
 		return  t * t * t * (t * (t * 6 - 15) + 10);
+	}
+
+	static const inline XMFLOAT2 modulus(XMFLOAT2& a, XMFLOAT2 b)
+	{
+		XMFLOAT2 result;
+
+		result.x = a.x - b.x * (floor(a.x / b.x));
+		result.y = a.y - b.y * (floor(a.y / b.y));
+
+		return result;
+	}
+
+	static const inline float floor(float a)
+	{
+		int b = (int)a;
+
+		return (float)b;
 	}
 };

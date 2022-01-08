@@ -16,11 +16,13 @@ public:
 	~WindErosion();
 
 	void setWindAttributes(float sed, float sus, float abr, float rgh, float set, bool weigh);
-	void fly(float deltaTime, float amplitude, float* heightMap, float* sedimentMap, WindParticle& particle, int resolution);
+	void fly(float dt, float amplitude, float* heightMap, float* sedimentMap, WindParticle& particle, int resolution);
 
 private:
-	void cascade(float deltaTime, int i, float* heightMap, float* sedimentMap, WindParticle& particle, int resolution);
-	XMFLOAT2 calculateParticleWeight(float deltaTime, WindParticle& particle, XMFLOAT2 direction, float* heightMap, int index, int resolution);
+	void cascade(float dt, int i, float* heightMap, float* sedimentMap, WindParticle& particle, int resolution);
+
+	XMFLOAT3 calculateNormal(int index, int resolution, float* heightMap, float* sedimentMap, float amplitude);
+	XMFLOAT3 calculateDeflectionNormal(WindParticle& particle, int index, int resolution, float* heightMap, float* sedimentMap, float amplitude);
 
 	XMFLOAT3 windVelocity = { 3.0f, -1.0f, 3.0f };
 

@@ -2,6 +2,37 @@
 
 #include "MathsUtils.h"
 
+XMFLOAT2 operator +(const XMFLOAT2& lhs, const XMFLOAT2& rhs)
+{
+	XMFLOAT2 result;
+
+	result.x = lhs.x + rhs.x;
+	result.y = lhs.y + rhs.y;
+
+	return result;
+}
+
+XMFLOAT3 operator +(const XMFLOAT3& lhs, const XMFLOAT3& rhs)
+{
+	XMFLOAT3 result;
+
+	result.x = lhs.x + rhs.x;
+	result.y = lhs.y + rhs.y;
+	result.z = lhs.z + rhs.z;
+
+	return result;
+}
+
+XMINT2 operator +(const XMINT2& lhs, const XMINT2& rhs)
+{
+	XMINT2 result;
+
+	result.x = lhs.x + rhs.x;
+	result.y = lhs.y + rhs.y;
+
+	return result;
+}
+
 WindErosion::WindErosion()
 {
 }
@@ -27,16 +58,13 @@ void WindErosion::setWindAttributes(float sed, float sus, float abr, float rgh, 
 	settling = set;
 }
 
-void WindErosion::fly(float deltaTime, float amplitude, float* heightMap, float* sedimentMap, WindParticle& particle, int resolution)
+void WindErosion::fly(float dt, float amplitude, float* heightMap, float* sedimentMap, WindParticle& particle, int resolution)
 {
-	int iterations = 0;
 	float acceleration = 0.1f;
 	int index = ((int)particle.position.y * resolution) + (int)particle.position.x;
 
 	while (true)
 	{
-		//Follow wind path and alter terrain
-
 		if (height < (heightMap[index] + sedimentMap[index]))
 		{
 			//Particles underneath the heightmap are moved upwards
@@ -46,31 +74,35 @@ void WindErosion::fly(float deltaTime, float amplitude, float* heightMap, float*
 		else if (height > heightMap[index] + sedimentMap[index])
 		{
 			//Applying gravity to flying particles
-			windVelocity.y -= (deltaTime * acceleration);
-		}
-
-		//Accelerate wind
-		windVelocity.x += (acceleration * deltaTime * (particle.velocity.x - windVelocity.x));
-		windVelocity.y += (acceleration * deltaTime * (particle.velocity.y - windVelocity.y));
-		windVelocity.z += (acceleration * deltaTime * (particle.velocity.z - windVelocity.z));
-
-		if (weightedParticles)
-		{
-			XMFLOAT2 posInc = { deltaTime * windVelocity.x, deltaTime * windVelocity.z };
-			XMFLOAT2 direction = { (posInc.x > 0) ? 1.0f : -1.0f, (posInc.y > 0) ? 1.0f : -1.0f };
-			XMFLOAT2 weight = calculateParticleWeight(deltaTime, particle, direction, heightMap, index, resolution);
-
-			particle.position.x += weight.x * posInc.x;
-			particle.position.y += weight.y * posInc.y;
+			windVelocity.y -= (dt * acceleration);
 		}
 
 		else
 		{
-			particle.position.x += deltaTime * windVelocity.x;
-			particle.position.y += deltaTime * windVelocity.z;
+			//Calculating the deflection normal with respect to a wind direction
+			XMFLOAT3 normal = calculateDeflectionNormal(particle, index, resolution, heightMap, sedimentMap, amplitude);
+
+			if (weightedParticles)
+			{
+				XMFLOAT3 cross = MathsUtils::crossProduct(MathsUtils::crossProduct(windVelocity, normal), normal);
+
+				MathsUtils::normalise3D(cross);
+
+				windVelocity.x = dt * cross.x;
+				windVelocity.y = dt * cross.y;
+				windVelocity.z = dt * cross.z;
+			}
 		}
 
-		height += (deltaTime * windVelocity.y);
+		//Accelerate wind
+		windVelocity.x += (acceleration * dt * (particle.velocity.x - windVelocity.x));
+		windVelocity.y += (acceleration * dt * (particle.velocity.y - windVelocity.y));
+		windVelocity.z += (acceleration * dt * (particle.velocity.z - windVelocity.z));
+
+		particle.position.x += dt * windVelocity.x;
+		particle.position.y += dt * windVelocity.z;
+
+		height += (dt * windVelocity.y);
 
 		//The next index position of the particle
 		int nextIndex = ((int)particle.position.y * resolution) + (int)particle.position.x;
@@ -81,30 +113,27 @@ void WindErosion::fly(float deltaTime, float amplitude, float* heightMap, float*
 			break;
 		}
 
-		//Surface Contact
+		//Made contact with the surface of the terrain
 		if (height <= heightMap[nextIndex] + sedimentMap[nextIndex])
 		{
-			float force = MathsUtils::magnitude1(MathsUtils::magnitude3(windVelocity.x, windVelocity.y, windVelocity.z)*(sedimentMap[nextIndex]+heightMap[nextIndex]-height));
+			//Calculate force based on strength of the wind and density of the terrain
+			float force = MathsUtils::magnitude3(windVelocity.x, windVelocity.y, windVelocity.z) * (sedimentMap[nextIndex] + heightMap[nextIndex] - height);
 
-			//Abrasion
+			//Abrasion occurs - solid ground is eroded, more sediment is created at this position
 			if (sedimentMap[index] <= 0.0f)
 			{
 				sedimentMap[index] = 0.0f;
-
-				float increment = (deltaTime * abrasion * force * sedimentRate);
-
-				heightMap[index] -= (10000.0f * increment);	//Scaling the increment value so it has a noticeable impact on the height map
+				float increment = (dt * abrasion * force * sedimentRate);
+				heightMap[index] -= increment;
 				sedimentMap[index] += increment;
 			}
 
-			else if (sedimentMap[index] > (deltaTime * suspension * force))
+			else if (sedimentMap[index] > (dt * suspension * force))	//Collided with pile of sediment, particle picks more up and begins sliding
 			{
-				float increment = (deltaTime * suspension * force);
-
+				float increment = (dt * suspension * force);
 				sedimentMap[index] -= increment;
 				sedimentRate += increment;
-
-				cascade(deltaTime, index, heightMap, sedimentMap, particle, resolution);
+				cascade(dt, index, heightMap, sedimentMap, particle, resolution);
 			}
 
 			else
@@ -114,64 +143,96 @@ void WindErosion::fly(float deltaTime, float amplitude, float* heightMap, float*
 		}
 
 		else
-		{
-			float increment = (deltaTime * suspension * sedimentRate);
-
+		{	//Did not collide with terrain - particle is flying, begin cascading process
+			float increment = (dt * suspension * sedimentRate);
 			sedimentRate -= increment;
-
 			sedimentMap[index] += (0.5f * increment);
 			sedimentMap[nextIndex] += (0.5f * increment);
-
-			cascade(deltaTime, index, heightMap, sedimentMap, particle, resolution);
-			cascade(deltaTime, nextIndex, heightMap, sedimentMap, particle, resolution);
+			cascade(dt, index, heightMap, sedimentMap, particle, resolution);
+			cascade(dt, nextIndex, heightMap, sedimentMap, particle, resolution);
 		}
 
+		//Strength of wind is too low to be noticeable, break and kill particle
 		if (MathsUtils::magnitude3(windVelocity.x, windVelocity.y, windVelocity.z) < 0.01f)
 		{
 			break;
 		}
 
-		iterations++;
-
 		index = nextIndex;
 	}
 }
 
-XMFLOAT2 WindErosion::calculateParticleWeight(float deltaTime, WindParticle& particle, XMFLOAT2 direction, float* heightMap, int index, int resolution)
+XMFLOAT3 WindErosion::calculateNormal(int index, int resolution, float* heightMap, float* sedimentMap, float amplitude)
 {
-	XMFLOAT3 fwdNeighbours[3] =
-	{
-		//Nearest neighbour vertex in the direction of the particle
-		XMFLOAT3(particle.position.x + direction.x, 0.0f, particle.position.y + direction.y),
-		//Vertices immediately adjacent to the particle in the x and z axes respectively
-		XMFLOAT3(particle.position.x + direction.x, 0.0f, particle.position.y),
-		XMFLOAT3(particle.position.x, 0.0f, particle.position.y + direction.y)
-	};
+	XMFLOAT3 normal = { 0.0f, 0.0f, 0.0f };
 
-	//Grabbing the position in the y-axis at each vertex from the height map
-	for (int i = 0; i < 3; i++)
-	{
-		if (((fwdNeighbours[i].z * resolution) + fwdNeighbours[i].x) < 0 || ((fwdNeighbours[i].z * resolution) + fwdNeighbours[i].x) >= (resolution * resolution))
-			continue;
+	//Indexes of neighbour positions in 4 directions
+	int nI[4] = { index + 1, index - 1, index + resolution, index - resolution };
 
-		fwdNeighbours[i].y = heightMap[(int)((fwdNeighbours[i].z * resolution) + fwdNeighbours[i].x)];
+	for (int m = 0; m < 4; m++)
+	{
+		//Check if neighbour is within the bounds of the height map, otherwise set to current position index
+		if (nI[m] < 0 || nI[m] >= (resolution * resolution) - 1)
+			nI[m] = index;
 	}
 
-	//Creating vectors to describe the slope of the terrain in each axis
-	XMFLOAT3 xDirection = { fwdNeighbours[1].x - particle.position.x, fwdNeighbours[1].y - heightMap[index], fwdNeighbours[1].z - particle.position.y };
-	XMFLOAT3 zDirection = { fwdNeighbours[2].x - particle.position.x, fwdNeighbours[2].y - heightMap[index], fwdNeighbours[2].z - particle.position.y };
+	XMFLOAT3 n0 = { 0.0f, amplitude * (heightMap[nI[0]] - heightMap[index] + sedimentMap[nI[0]] - sedimentMap[index]), 1.0f };
+	XMFLOAT3 n1 = { 0.0f, amplitude * (heightMap[nI[1]] - heightMap[index] + sedimentMap[nI[1]] - sedimentMap[index]), -1.0f };
+	XMFLOAT3 n2 = { 1.0f, amplitude * (heightMap[nI[2]] - heightMap[index] + sedimentMap[nI[2]] - sedimentMap[index]), 0.0f };
+	XMFLOAT3 n3 = { -1.0f, amplitude * (heightMap[nI[3]] - heightMap[index] + sedimentMap[nI[3]] - sedimentMap[index]), 0.0f };
 
-	MathsUtils::normalise3D(xDirection.x, xDirection.y, xDirection.z);
-	MathsUtils::normalise3D(zDirection.x, zDirection.y, zDirection.z);
+	normal = normal + MathsUtils::crossProduct(n0, n2);
+	normal = normal + MathsUtils::crossProduct(n1, n3);
+	normal = normal + MathsUtils::crossProduct(n2, n1);
+	normal = normal + MathsUtils::crossProduct(n3, n0);
 
-	//Magnitude of the normalised directional vectors can be used to scale the particle position and steer it down a slope
-	float xWeight = MathsUtils::magnitude3(xDirection.x, xDirection.y, xDirection.z);
-	float zWeight = MathsUtils::magnitude3(zDirection.x, zDirection.y, zDirection.z);
+	MathsUtils::normalise3D(normal);
 
-	return XMFLOAT2(xWeight, zWeight);
+	return normal;
 }
 
-void WindErosion::cascade(float deltaTime, int index, float* heightMap, float* sedimentMap, WindParticle& particle, int resolution)
+XMFLOAT3 WindErosion::calculateDeflectionNormal(WindParticle& particle, int index, int resolution, float* heightMap, float* sedimentMap, float amplitude)
+{
+	XMFLOAT3 result = { 0.0f, 0.0f, 0.0f };
+
+	XMINT2 p00 = { (int)particle.position.x, (int)particle.position.y };	//Back (floored position)
+	XMINT2 p10 = p00 + XMINT2(1, 0);	//Left
+	XMINT2 p01 = p00 + XMINT2(0, 1);	//Right
+	XMINT2 p11 = p00 + XMINT2(1, 1);	//Front
+
+	//Calculating the normals in each direction, clamped to ensure they are within the bounds of the map
+	XMFLOAT3 n00 = calculateNormal(MathsUtils::clamp((p00.x * resolution) + p00.y, 0, (resolution * resolution) - 1), resolution, heightMap, sedimentMap, amplitude);
+	XMFLOAT3 n10 = calculateNormal(MathsUtils::clamp((p10.x * resolution) + p10.y, 0, (resolution * resolution) - 1), resolution, heightMap, sedimentMap, amplitude);
+	XMFLOAT3 n01 = calculateNormal(MathsUtils::clamp((p01.x * resolution) + p01.y, 0, (resolution * resolution) - 1), resolution, heightMap, sedimentMap, amplitude);
+	XMFLOAT3 n11 = calculateNormal(MathsUtils::clamp((p11.x * resolution) + p11.y, 0, (resolution * resolution) - 1), resolution, heightMap, sedimentMap, amplitude);
+
+	//Getting a weighting based on the current floored position
+	XMFLOAT2 weights = MathsUtils::modulus(XMFLOAT2((float)p00.x, (float)p00.y), XMFLOAT2(1.0f, 1.0f));
+	weights = XMFLOAT2(1.0f - weights.x, 1.0f - weights.y);
+
+	//Scaling each directional normal with respect to the weighting
+	n00 = XMFLOAT3(n00.x * weights.x, n00.y * weights.x, n00.z * weights.x);
+	n00 = XMFLOAT3(n00.x * weights.y, n00.y * weights.y, n00.z * weights.y);
+
+	n10 = XMFLOAT3(n00.x * (1.0f - weights.x), n10.y * (1.0f - weights.x), n10.z * (1.0f - weights.x));
+	n10 = XMFLOAT3(n00.x * weights.y, n10.y * weights.y, n10.z * weights.y);
+
+	n01 = XMFLOAT3(n01.x * weights.x, n01.y * weights.x, n01.z * weights.x);
+	n01 = XMFLOAT3(n01.x * (1.0f - weights.y), n01.y * (1.0f - weights.y), n01.z * (1.0f - weights.y));
+
+	n11 = XMFLOAT3(n11.x * (1.0f - weights.x), n11.y * (1.0f - weights.x), n11.z * (1.0f - weights.x));
+	n11 = XMFLOAT3(n11.x * (1.0f - weights.y), n11.y * (1.0f - weights.y), n11.z * (1.0f - weights.y));
+
+	//Summing the weighted directions
+	result = result + n00;
+	result = result + n10;
+	result = result + n01;
+	result = result + n11;
+
+	return result;
+}
+
+void WindErosion::cascade(float dt, int index, float* heightMap, float* sedimentMap, WindParticle& particle, int resolution)
 {
 	//Neighbour directions (8-Way)
 	const int nX[8] = { -1,-1,-1,0,0,1,1,1 };
@@ -180,14 +241,8 @@ void WindErosion::cascade(float deltaTime, int index, float* heightMap, float* s
 	//Neighbour positions
 	int neighbours[8] =
 	{
-		index - resolution - 1,
-		index - resolution,
-		index - resolution + 1,
-		index - 1,
-		index + 1,
-		index + resolution - 1,
-		index + resolution,
-		index + resolution + 1
+		index - resolution - 1, index - resolution, index - resolution + 1, index - 1,
+		index + 1, index + resolution - 1, index + resolution, index + resolution + 1
 	};
 	
 	//Iterate over all neighbours
@@ -203,7 +258,7 @@ void WindErosion::cascade(float deltaTime, int index, float* heightMap, float* s
 		if (particle.position.x + nX[m] < 0 || particle.position.y + nY[m] < 0)
 			continue;
 	
-		//Pile Size Difference
+		//difference in size of the piles
 		float difference = (heightMap[index] + sedimentRate) - (heightMap[neighbours[m]] + sedimentRate);
 		float excess = abs(difference) - roughness;
 	
@@ -212,18 +267,19 @@ void WindErosion::cascade(float deltaTime, int index, float* heightMap, float* s
 			continue;
 		}
 	
-		//Transfer Mass
+		//transfer sediment mass
 		float transfer;
-		if (difference > 0) //Pile is Larger
+
+		if (difference > 0) //current pile is larger
 		{
-			transfer = min(sedimentMap[index], excess / 2.0);
+			transfer = min(sedimentMap[index], excess / 2.0f);
 		}
-		else         //Neighbour is Larger
+		else         //neighbour pile is larger
 		{
-			transfer = -min(sedimentMap[neighbours[m]], excess / 2.0);
+			transfer = -min(sedimentMap[neighbours[m]], excess / 2.0f);
 		}
 	
-		sedimentMap[index] -= deltaTime * settling * transfer;
-		sedimentMap[neighbours[m]] += deltaTime * settling * transfer;
+		sedimentMap[index] -= dt * settling * transfer;
+		sedimentMap[neighbours[m]] += dt * settling * transfer;
 	}
 }

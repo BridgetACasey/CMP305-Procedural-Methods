@@ -248,11 +248,15 @@ void TerrainMesh::renderSampleTerrain(float dt)
 	amplitude = 28.0f;
 	frequency = 0.033f;
 
-	generateRigidFBM(8, 0.4f, 1.2f);
+	generateRidgedFBM(8, 0.4f, 1.2f);
 
 	frequency = 0.015f;
 
 	generateFBM(8, 0.5f, 1.1f);
+
+	//float pVel[3] = { 1.0f, 0.0f, 1.0f };
+	//float wVel[3] = { 1.0f, -1.0f, 1.0f };
+	//windErosion(dt, 5000, pVel, wVel, 0.7f, 0.025f, 0.5f, 0.01f, 0.5f, true);
 }
 
 void TerrainMesh::flatten()
@@ -452,7 +456,7 @@ void TerrainMesh::generateFBM(int octaves, float ampl, float freq)
 	}
 }
 
-void TerrainMesh::generateRigidFBM(int octaves, float ampl, float freq)
+void TerrainMesh::generateRidgedFBM(int octaves, float ampl, float freq)
 {
 	float height = 0.0f;
 	float x = 0.0f;

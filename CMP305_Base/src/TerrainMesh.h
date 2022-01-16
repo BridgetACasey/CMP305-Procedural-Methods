@@ -28,7 +28,7 @@ public:
 	void perlinImproved();
 
 	void generateFBM(int octaves, float ampl, float freq);
-	void generateRigidFBM(int octaves, float freq, float ampl);
+	void generateRidgedFBM(int octaves, float freq, float ampl);
 
 	void windErosion(float dt, int itr, float* pVel, float* wVel, float sed, float sus, float abr, float rgh, float set, bool weigh);
 

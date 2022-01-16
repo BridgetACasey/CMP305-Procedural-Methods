@@ -123,25 +123,25 @@ void MarkovChain::generateLookupTable(const char* fileName, int sample)	//How ma
 	//Create the table for the data
 	for (int i = 0; i < (data.size() - sample); i++)
 	{
-		MarkovWord word;
+		MarkovWord currentEntry;
 
-		word.text.first = data.substr(i, sample);
-		word.text.second = data.substr(i + sample, 1);
+		currentEntry.text.first = data.substr(i, sample);
+		currentEntry.text.second = data.substr(i + sample, 1);
 
 		bool insertPair = true;
 
-		for (MarkovWord& previous : lookupTable)
+		for (MarkovWord& existingEntry : lookupTable)
 		{
-			if (word.text.first == previous.text.first)
+			if (currentEntry.text.first == existingEntry.text.first)
 			{
-				word.inputFrequency += 1.0f;
-				previous.inputFrequency += 1.0f;
+				currentEntry.inputFrequency += 1.0f;
+				existingEntry.inputFrequency += 1.0f;
 
-				if (word.text.second == previous.text.second)
+				if (currentEntry.text.second == existingEntry.text.second)
 				{
 					//If the current pair of input and output data already exists in the table, increment it and move on to a new pair
-					word.matchFrequency += 1.0f;
-					previous.matchFrequency += 1.0f;
+					currentEntry.matchFrequency += 1.0f;
+					existingEntry.matchFrequency += 1.0f;
 					insertPair = false;
 				}
 			}
@@ -149,7 +149,7 @@ void MarkovChain::generateLookupTable(const char* fileName, int sample)	//How ma
 
 		if (insertPair)
 		{
-			lookupTable.push_back(word);
+			lookupTable.push_back(currentEntry);
 		}
 	}
 

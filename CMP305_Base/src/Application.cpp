@@ -270,7 +270,7 @@ void Application::gui()
 	ImGui::SameLine();
 	if (ImGui::Button("Ridged FBM"))
 	{
-		terrain->generateRigidFBM(octs, amplInfl, freqInfl);
+		terrain->generateRidgedFBM(octs, amplInfl, freqInfl);
 		terrain->Regenerate(renderer->getDevice(), renderer->getDeviceContext());
 	}
 
@@ -282,25 +282,25 @@ void Application::gui()
 
 	static bool weightedParticles = true;
 	static float dt = 0.25f;
-	static int particleDensity = 3000;
+	static int particleDensity = 5000;
 	static float particleVelocity[3] = { 1.0f, 0.0f, 1.0f };
 	static float windVelocity[3] = { 1.0f, -1.0f, 1.0f };
-	static float sediment = 0.5f;
-	static float suspension = 0.2f;
-	static float abrasion = 0.2f;
-	static float roughness = 0.001f;
+	static float sediment = 0.4f;
+	static float suspension = 0.02f;
+	static float abrasion = 0.25f;
+	static float roughness = 0.01f;
 	static float settling = 0.5f;
 
 	ImGui::Checkbox("Weighted Particles", &weightedParticles);
-	ImGui::DragFloat("Delta", &dt, 0.01f, 0.01f, 1.0f);
+	ImGui::DragFloat("Delta", &dt, 0.01f, 0.01f, 1.0f, "%.2f");
 	ImGui::DragInt("P. Density", &particleDensity, 10, 1, 100000);
-	ImGui::DragFloat3("Particle Vel.", particleVelocity, 0.1f, -1.0f, 1.0f);
-	ImGui::DragFloat3("Wind Vel.", windVelocity, 0.1f, -1.0f, 1.0f);
-	ImGui::DragFloat("Sediment", &sediment, 0.001f, 0.001f, 1.0f);
-	ImGui::DragFloat("Suspension", &suspension, 0.001f, 0.001f, 1.0f);
-	ImGui::DragFloat("Abrasion", &abrasion, 0.001f, 0.001f, 1.0f);
-	ImGui::DragFloat("Roughness", &roughness, 0.001f, 0.000f, 1.0f);
-	ImGui::DragFloat("Settling", &settling, 0.001f, 0.001f, 1.0f);
+	ImGui::DragFloat3("Particle Vel.", particleVelocity, 0.01f, -1.0f, 1.0f, "%.2f");
+	ImGui::DragFloat3("Wind Vel.", windVelocity, 0.01f, -1.0f, 1.0f, "%.2f");
+	ImGui::DragFloat("Sediment", &sediment, 0.01f, 0.01f, 1.0f, "%.2f");
+	ImGui::DragFloat("Suspension", &suspension, 0.01f, 0.01f, 1.0f, "%.2f");
+	ImGui::DragFloat("Abrasion", &abrasion, 0.01f, 0.01f, 1.0f, "%.2f");
+	ImGui::DragFloat("Roughness", &roughness, 0.01f, 0.00f, 1.0f, "%.2f");
+	ImGui::DragFloat("Settling", &settling, 0.01f, 0.01f, 1.0f, "%.2f");
 
 	ImGui::Spacing();
 

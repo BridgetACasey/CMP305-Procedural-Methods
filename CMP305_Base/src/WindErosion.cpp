@@ -167,7 +167,13 @@ XMFLOAT3 WindErosion::calculateNormal(int index, int resolution, float* heightMa
 	XMFLOAT3 normal = { 0.0f, 0.0f, 0.0f };
 
 	//Indexes of neighbour positions in 4 directions
-	int nI[4] = { index + 1, index - 1, index + resolution, index - resolution };
+	int nI[4] =
+	{
+		index + 1,	//Right along x-axis
+		index - 1,	//Left along x-axis
+		index + resolution,	//Forward along z-axis
+		index - resolution	//Back along z-axis
+	};
 
 	for (int m = 0; m < 4; m++)
 	{
@@ -176,6 +182,7 @@ XMFLOAT3 WindErosion::calculateNormal(int index, int resolution, float* heightMa
 			nI[m] = index;
 	}
 
+	//Using the indexes to work out gradients with values retrieved from the height map and sediment map
 	XMFLOAT3 n0 = { 0.0f, amplitude * (heightMap[nI[0]] - heightMap[index] + sedimentMap[nI[0]] - sedimentMap[index]), 1.0f };
 	XMFLOAT3 n1 = { 0.0f, amplitude * (heightMap[nI[1]] - heightMap[index] + sedimentMap[nI[1]] - sedimentMap[index]), -1.0f };
 	XMFLOAT3 n2 = { 1.0f, amplitude * (heightMap[nI[2]] - heightMap[index] + sedimentMap[nI[2]] - sedimentMap[index]), 0.0f };
@@ -234,18 +241,24 @@ XMFLOAT3 WindErosion::calculateDeflectionNormal(WindParticle& particle, int inde
 
 void WindErosion::cascade(float dt, int index, float* heightMap, float* sedimentMap, WindParticle& particle, int resolution)
 {
-	//Neighbour directions (8-Way)
+	//Neighbour directions (8-Way) stored for ease of use
 	const int nX[8] = { -1,-1,-1,0,0,1,1,1 };
 	const int nY[8] = { -1,0,1,-1,1,-1,0,1 };
 	
 	//Neighbour positions
 	int neighbours[8] =
 	{
-		index - resolution - 1, index - resolution, index - resolution + 1, index - 1,
-		index + 1, index + resolution - 1, index + resolution, index + resolution + 1
+		index - resolution - 1,	//Bottom Left
+		index - resolution,		//Bottom
+		index - resolution + 1,	//Bottom Right
+		index - 1,				//Left
+		index + 1,				//Right
+		index + resolution - 1,	//Top Left
+		index + resolution,		//Top
+		index + resolution + 1	//Top Right
 	};
 	
-	//Iterate over all neighbours
+	//Iterate over all neighbours and assess their sediment mass
 	for (int m = 0; m < 8; m++)
 	{
 		//Check if neighbour is within the bounds of the height map, otherwise skip
@@ -260,7 +273,7 @@ void WindErosion::cascade(float dt, int index, float* heightMap, float* sediment
 	
 		//difference in size of the piles
 		float difference = (heightMap[index] + sedimentRate) - (heightMap[neighbours[m]] + sedimentRate);
-		float excess = abs(difference) - roughness;
+		float excess = abs(difference) - roughness;	//How even or uneven each sediment pile should be
 	
 		if (excess <= 0)
 		{
